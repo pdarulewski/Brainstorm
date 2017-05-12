@@ -11,7 +11,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <mainClass>pbl.brainstorm.MainApp</mainClass>
+        <mainClass>pbl.brainstorm.Main</mainClass>
     </properties>
 
     <organization>
