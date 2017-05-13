@@ -3,4 +3,4 @@
 <?import javafx.scene.layout.StackPane?>
 
 
-<StackPane fx:id="applicationScreen" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pbl.brainstorm.controllers.ApplicationScreenController" />
+<StackPane fx:id="applicationScreen" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMousePressed="#handleMousePressed" prefHeight="800.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pbl.brainstorm.controllers.ApplicationScreenController" />

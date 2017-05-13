@@ -5,7 +5,12 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -23,7 +28,10 @@ public class MenuController {
     private TextField problemField;
 
     @FXML
-    private Pane applicationPane;
+    private Label emptyProblemField;
+
+    @FXML
+    private Pane menuPane;
 
     public void setMainController(MainController mainController) {
 
@@ -63,27 +71,29 @@ public class MenuController {
 
             appController.setMainController(mainController);
 
-            //mainController.resizeAnchorPane(applicationPane.getWidth(), applicationPane.getHeight());
-            //mainController.resizeAnchorPane(1000.0, 1000.0);
-            // TODO: Try to make MainScreen as big as ApplicationScreen.
-            final Circle mainNode = createMainNode(100);
             final Text mainText = createText(s, 15);
+
+            double textWidth = mainText.getLayoutBounds().getWidth();
+
+            final Circle mainNode = createCircle(textWidth / 2 + 15);
 
             Group group = new Group(mainNode, mainText);
 
             pane.getChildren().add(group);
-            
-            //mainNode.relocate(mainNode.getBoundsInParent().getWidth() / 2, mainNode.getBoundsInParent().getHeight() / 2);
-            
+
             centerText(mainText, mainNode.getRadius());
 
             mainController.setScreen(pane);
+
+        } else {
+
+            emptyProblemField.setVisible(true);
 
         }
 
     }
 
-    private Circle createMainNode(double radius) {
+    private Circle createCircle(double radius) {
 
         final Circle circle = new Circle(radius);
 
@@ -92,7 +102,7 @@ public class MenuController {
         circle.setStrokeType(StrokeType.INSIDE);
         circle.setFill(Color.ANTIQUEWHITE);
         circle.relocate(0, 0);
-        
+
         return circle;
     }
 
@@ -112,6 +122,24 @@ public class MenuController {
         double height = text.getBoundsInLocal().getHeight();
 
         text.relocate(radius - width / 2, radius - height / 2);
+
+    }
+
+    @FXML
+    private void handleEnter(KeyEvent event) {
+
+        if (event.getCode() == KeyCode.ENTER) {
+
+            startBrainstorming();
+
+        }
+
+    }
+
+    @FXML
+    private void handleMouseClicked(MouseEvent event) {
+
+        menuPane.requestFocus();
 
     }
 

@@ -3,7 +3,7 @@ package pbl.brainstorm;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 public class Main extends Application {
@@ -19,9 +19,9 @@ public class Main extends Application {
 
         FXMLLoader loader = new FXMLLoader(this.getClass().getResource("/fxml/MainScreen.fxml"));
 
-        AnchorPane anchorPane = loader.load();
+        StackPane stackPane = loader.load();
 
-        Scene scene = new Scene(anchorPane, 400, 400);
+        Scene scene = new Scene(stackPane, 400, 400);
 
         stage.setScene(scene);
 
