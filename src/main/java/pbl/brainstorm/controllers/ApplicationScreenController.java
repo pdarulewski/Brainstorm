@@ -72,20 +72,18 @@ public class ApplicationScreenController {
         String s = "Name a node...";
         Text text = createText(s, 10);
         double textWidth = text.getLayoutBounds().getWidth();
-        final Circle circle = createCircle(textWidth / 2 + 15, cm.getAnchorX(), cm.getAnchorY());
+        final Circle circle = createCircle(textWidth / 2 + 15,
+                cm.getAnchorX() - textWidth / 2 - 15, cm.getAnchorY() - textWidth / 2 - 15);
         Group group = new Group(circle, text);
         
         applicationScreen.getChildren().add(group);
 
-        centerText(text, circle.getRadius());
+        moveText(text, cm.getAnchorX() - text.getBoundsInLocal().getWidth() / 2, cm.getAnchorY()- text.getBoundsInLocal().getHeight() / 2);
     }
 
-    private void centerText(Text text, double radius) {
+    private void moveText(Text text, double x, double y) {
 
-        double width = text.getBoundsInLocal().getWidth();
-        double height = text.getBoundsInLocal().getHeight();
-
-        text.relocate(radius - width / 2, radius - height / 2);
+        text.relocate(x, y);
 
     }
 
@@ -93,7 +91,7 @@ public class ApplicationScreenController {
 
         final Circle circle = new Circle(radius);
 
-        circle.setFill(Color.BLUE);
+        circle.setFill(Color.LIGHTBLUE);
         circle.relocate(x, y);
 
         return circle;
