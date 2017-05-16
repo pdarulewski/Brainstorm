@@ -6,6 +6,9 @@ import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -69,42 +72,53 @@ public class ApplicationScreenController {
     @FXML
     private void addNewNodePressed(ContextMenu cm) {
 
-        String s = "Name a node...";
-        Text text = createText(s, 10);
-        double textWidth = text.getLayoutBounds().getWidth();
-        final Circle circle = createCircle(textWidth / 2 + 15,
-                cm.getAnchorX() - textWidth / 2 - 15, cm.getAnchorY() - textWidth / 2 - 15);
-        Group group = new Group(circle, text);
-        
-        applicationScreen.getChildren().add(group);
-
-        moveText(text, cm.getAnchorX() - text.getBoundsInLocal().getWidth() / 2, cm.getAnchorY()- text.getBoundsInLocal().getHeight() / 2);
+        TextField tf = new TextField("Name a node");
+        moveTextField(tf, cm.getX(), cm.getY());
+        applicationScreen.getChildren().add(tf);
     }
 
-    private void moveText(Text text, double x, double y) {
+    private void handleEnterInTextField(KeyEvent event, TextField tf) {
+        if (event.getCode() == KeyCode.ENTER) {
+            refreshingNode(tf);
+        }
+    }
+    
+    //TODO: showing the circles
 
-        text.relocate(x, y);
+    private void refreshingNode(TextField tf) {
 
+        Text text = createText(tf.getText(), 10);
+
+        tf.setLayoutX(text.getBoundsInLocal().getHeight());
+
+        double textWidth = text.getBoundsInLocal().getHeight();
+        double textHeight = text.getBoundsInLocal().getHeight();
+
+        final Circle circle = createCircle(textWidth / 2 + 15,
+                cm.getX() - textWidth / 2 - 15, cm.getY() - textWidth / 2 - 15);
+        Group group = new Group(circle, tf);
+
+        applicationScreen.getChildren().add(group);
+
+        moveTextField(tf, cm.getX() - textHeight / 2, cm.getY() - textHeight / 2);
+
+    }
+
+    private void moveTextField(TextField tf, double x, double y) {
+        tf.relocate(x, y);
     }
 
     private Circle createCircle(double radius, double x, double y) {
-
         final Circle circle = new Circle(radius);
-
         circle.setFill(Color.LIGHTBLUE);
         circle.relocate(x, y);
-
         return circle;
     }
 
     private Text createText(String name, int fontSize) {
-
         final Text text = new Text(name);
-
         text.setFont(new Font(fontSize));
         text.setBoundsType(TextBoundsType.VISUAL);
-
         return text;
     }
-
 }
