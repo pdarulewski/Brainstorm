@@ -47,16 +47,20 @@ public class ApplicationScreenController {
             }
 
             final MenuItem addNewNode = new MenuItem("Add a new node...");
+
             addNewNode.setOnAction(new EventHandler<ActionEvent>() {
+
                 @Override
                 public void handle(ActionEvent e) {
+
                     addNewNodePressed(cm);
+
                 }
+
             });
 
-            final MenuItem deleteNode = new MenuItem("Delete an existing node...");
-
-            cm.getItems().addAll(addNewNode, deleteNode);
+            //final MenuItem deleteNode = new MenuItem("Delete an existing node...");
+            cm.getItems().add(addNewNode);
 
             cm.show(applicationScreen, event.getScreenX(), event.getScreenY());
 
@@ -72,16 +76,29 @@ public class ApplicationScreenController {
     @FXML
     private void addNewNodePressed(ContextMenu cm) {
 
-        final TextField tf = new TextField("Name a node");
+        final TextField tf = new TextField();
+
+        tf.setPromptText("Add a new item...");
+
+        tf.requestFocus();
+
         moveTextField(tf, cm.getX(), cm.getY());
+
         applicationScreen.getChildren().add(tf);
 
         tf.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+
             public void handle(final KeyEvent keyEvent) {
+
                 if (keyEvent.getCode() == KeyCode.ENTER) {
+
                     refreshingNode(tf);
+
+                    applicationScreen.requestFocus();
+
                 }
             }
+
         });
 
     }
@@ -98,43 +115,57 @@ public class ApplicationScreenController {
 
         final Circle circle = createCircle(tfWidth / 2,
                 cm.getX() - tfWidth / 2, cm.getY() - tfWidth / 2);
-        
+
         Group group = new Group(circle, tf);
 
         applicationScreen.getChildren().add(group);
+
         moveTextField(tf, cm.getX() - tfWidth / 2, cm.getY() - tfHeight / 2);
         //tf.setVisible(false);
-        
 
     }
 
     private void moveTextField(TextField tf, double x, double y) {
+
         tf.relocate(x, y);
+
     }
 
     private Circle createCircle(double radius, double x, double y) {
+
         final Circle circle = new Circle(radius);
+
         circle.setFill(Color.LIGHTBLUE);
         circle.relocate(x, y);
+
         drawLine(cm.getX(), cm.getY(), 500, 500);
+
         return circle;
+
     }
 
     private Text createText(String name, int fontSize) {
+
         final Text text = new Text(name);
+
         text.setFont(new Font(fontSize));
         text.setBoundsType(TextBoundsType.VISUAL);
+
         return text;
+
     }
 
     private void drawLine(double startX, double startY, double endX, double endY) {
+
         Line line = new Line();
+
         line.setStroke(Color.LIGHTGRAY);
         line.setStrokeWidth(3);
         line.setStartX(startX);
         line.setStartY(startY);
         line.setEndX(endX);
         line.setEndY(endY);
+
         applicationScreen.getChildren().add(line);
     }
 }
