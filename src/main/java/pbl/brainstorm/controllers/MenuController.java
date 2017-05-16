@@ -55,7 +55,7 @@ public class MenuController {
 
             FXMLLoader loader = new FXMLLoader(this.getClass().getResource("/fxml/ApplicationScreen.fxml"));
 
-            StackPane pane = null;
+            Pane pane = null;
 
             try {
 
