@@ -46,5 +46,4 @@ public class MainController {
         setScreen(pane);
 
     }
-
 }

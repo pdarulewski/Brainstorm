@@ -1,10 +1,9 @@
 package pbl.brainstorm.controllers;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import static javafx.geometry.Pos.CENTER;
 import javafx.scene.Group;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -13,10 +12,9 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.StrokeType;
+import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextBoundsType;
@@ -92,6 +90,7 @@ public class ApplicationScreenController {
 
         Text text = createText(tf.getText(), 10);
 
+        tf.setAlignment(CENTER);
         //TODO: ustawic dlugosc textfielda automatycznie
         //tf.setPrefWidth(text.getBoundsInLocal().getWidth());
         double tfWidth = tf.getWidth();
@@ -99,10 +98,13 @@ public class ApplicationScreenController {
 
         final Circle circle = createCircle(tfWidth / 2,
                 cm.getX() - tfWidth / 2, cm.getY() - tfWidth / 2);
+        
         Group group = new Group(circle, tf);
 
         applicationScreen.getChildren().add(group);
         moveTextField(tf, cm.getX() - tfWidth / 2, cm.getY() - tfHeight / 2);
+        //tf.setVisible(false);
+        
 
     }
 
@@ -114,6 +116,7 @@ public class ApplicationScreenController {
         final Circle circle = new Circle(radius);
         circle.setFill(Color.LIGHTBLUE);
         circle.relocate(x, y);
+        drawLine(cm.getX(), cm.getY(), 500, 500);
         return circle;
     }
 
@@ -122,5 +125,16 @@ public class ApplicationScreenController {
         text.setFont(new Font(fontSize));
         text.setBoundsType(TextBoundsType.VISUAL);
         return text;
+    }
+
+    private void drawLine(double startX, double startY, double endX, double endY) {
+        Line line = new Line();
+        line.setStroke(Color.LIGHTGRAY);
+        line.setStrokeWidth(3);
+        line.setStartX(startX);
+        line.setStartY(startY);
+        line.setEndX(endX);
+        line.setEndY(endY);
+        applicationScreen.getChildren().add(line);
     }
 }

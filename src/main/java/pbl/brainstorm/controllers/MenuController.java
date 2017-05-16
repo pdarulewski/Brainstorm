@@ -20,6 +20,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextBoundsType;
 
+import pbl.brainstorm.controllers.MainController;
+
 public class MenuController {
 
     private MainController mainController;
@@ -101,7 +103,7 @@ public class MenuController {
         circle.setStrokeWidth(10);
         circle.setStrokeType(StrokeType.INSIDE);
         circle.setFill(Color.ANTIQUEWHITE);
-        circle.relocate(500, 500);
+        circle.relocate(500 - radius, 500 - radius);
 
         return circle;
     }
@@ -121,7 +123,7 @@ public class MenuController {
         double width = text.getBoundsInLocal().getWidth();
         double height = text.getBoundsInLocal().getHeight();
 
-        text.relocate(radius - width / 2, radius - height / 2);
+        text.relocate(500 - width / 2, 500 - height / 2);
 
     }
 
