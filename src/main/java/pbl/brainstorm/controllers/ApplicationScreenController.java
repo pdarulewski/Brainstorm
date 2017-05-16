@@ -19,12 +19,18 @@ public class ApplicationScreenController {
     @FXML
     private StackPane applicationScreen;
 
+    final ContextMenu cm = new ContextMenu();
+
     @FXML
     private void handleMousePressed(MouseEvent event) {
 
         if (event.isSecondaryButtonDown()) {
 
-            final ContextMenu cm = new ContextMenu();
+            if (!cm.getItems().isEmpty()) {
+
+                cm.getItems().clear();
+
+            }
 
             final MenuItem addNewNode = new MenuItem("Add a new node...");
             final MenuItem deleteNode = new MenuItem("Delete an existing node...");
@@ -33,7 +39,12 @@ public class ApplicationScreenController {
 
             cm.show(applicationScreen, event.getScreenX(), event.getScreenY());
 
-            // TODO: The menu should disappear when mouse is clicked somewhere else on the pane.
+        }
+
+        if (event.isPrimaryButtonDown()) {
+
+            cm.hide();
+
         }
 
     }
