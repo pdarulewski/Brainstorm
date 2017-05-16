@@ -1,5 +1,7 @@
 package pbl.brainstorm.controllers;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -72,35 +74,35 @@ public class ApplicationScreenController {
     @FXML
     private void addNewNodePressed(ContextMenu cm) {
 
-        TextField tf = new TextField("Name a node");
+        final TextField tf = new TextField("Name a node");
         moveTextField(tf, cm.getX(), cm.getY());
         applicationScreen.getChildren().add(tf);
+
+        tf.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+            public void handle(final KeyEvent keyEvent) {
+                if (keyEvent.getCode() == KeyCode.ENTER) {
+                    refreshingNode(tf);
+                }
+            }
+        });
+
     }
 
-    private void handleEnterInTextField(KeyEvent event, TextField tf) {
-        if (event.getCode() == KeyCode.ENTER) {
-            refreshingNode(tf);
-        }
-    }
-    
-    //TODO: showing the circles
-
-    private void refreshingNode(TextField tf) {
+    private void refreshingNode(final TextField tf) {
 
         Text text = createText(tf.getText(), 10);
 
-        tf.setLayoutX(text.getBoundsInLocal().getHeight());
+        //TODO: ustawic dlugosc textfielda automatycznie
+        //tf.setPrefWidth(text.getBoundsInLocal().getWidth());
+        double tfWidth = tf.getWidth();
+        double tfHeight = tf.getHeight();
 
-        double textWidth = text.getBoundsInLocal().getHeight();
-        double textHeight = text.getBoundsInLocal().getHeight();
-
-        final Circle circle = createCircle(textWidth / 2 + 15,
-                cm.getX() - textWidth / 2 - 15, cm.getY() - textWidth / 2 - 15);
+        final Circle circle = createCircle(tfWidth / 2,
+                cm.getX() - tfWidth / 2, cm.getY() - tfWidth / 2);
         Group group = new Group(circle, tf);
 
         applicationScreen.getChildren().add(group);
-
-        moveTextField(tf, cm.getX() - textHeight / 2, cm.getY() - textHeight / 2);
+        moveTextField(tf, cm.getX() - tfWidth / 2, cm.getY() - tfHeight / 2);
 
     }
 

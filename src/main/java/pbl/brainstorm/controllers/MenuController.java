@@ -101,7 +101,7 @@ public class MenuController {
         circle.setStrokeWidth(10);
         circle.setStrokeType(StrokeType.INSIDE);
         circle.setFill(Color.ANTIQUEWHITE);
-        circle.relocate(0, 0);
+        circle.relocate(500, 500);
 
         return circle;
     }
