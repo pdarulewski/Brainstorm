@@ -19,9 +19,9 @@ public class Main extends Application {
 
         FXMLLoader loader = new FXMLLoader(this.getClass().getResource("/fxml/MainScreen.fxml"));
 
-        StackPane stackPane = loader.load();
+        StackPane pane = loader.load();
 
-        Scene scene = new Scene(stackPane, 400, 400);
+        Scene scene = new Scene(pane, 400, 400);
 
         stage.setScene(scene);
 

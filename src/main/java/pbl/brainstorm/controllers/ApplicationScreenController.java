@@ -3,7 +3,6 @@ package pbl.brainstorm.controllers;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import static javafx.geometry.Pos.CENTER;
 import javafx.scene.Group;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -18,7 +17,6 @@ import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextBoundsType;
-import pbl.brainstorm.controllers.*;
 
 public class ApplicationScreenController {
 
@@ -35,8 +33,10 @@ public class ApplicationScreenController {
 
     final ContextMenu cm = new ContextMenu();
 
+    final MenuItem addNewNode = new MenuItem("Add a new node...");
+
     @FXML
-    private void handleMousePressed(MouseEvent event) {
+    private void handleMousePressed(final MouseEvent event) {
 
         if (event.isSecondaryButtonDown()) {
 
@@ -46,20 +46,40 @@ public class ApplicationScreenController {
 
             }
 
-            final MenuItem addNewNode = new MenuItem("Add a new node...");
-
             addNewNode.setOnAction(new EventHandler<ActionEvent>() {
 
                 @Override
                 public void handle(ActionEvent e) {
 
-                    addNewNodePressed(cm);
+                    final TextField tf = new TextField();
+
+                    tf.setPromptText("Add a new item...");
+
+                    tf.requestFocus();
+
+                    tf.relocate(event.getSceneX(), event.getSceneY());
+
+                    applicationScreen.getChildren().add(tf);
+
+                    tf.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+
+                        public void handle(final KeyEvent keyEvent) {
+
+                            if (keyEvent.getCode() == KeyCode.ENTER) {
+
+                                refreshingNode(tf, event);
+
+                                applicationScreen.requestFocus();
+
+                            }
+                        }
+
+                    });
 
                 }
 
             });
 
-            //final MenuItem deleteNode = new MenuItem("Delete an existing node...");
             cm.getItems().add(addNewNode);
 
             cm.show(applicationScreen, event.getScreenX(), event.getScreenY());
@@ -73,61 +93,30 @@ public class ApplicationScreenController {
         }
     }
 
-    @FXML
-    private void addNewNodePressed(ContextMenu cm) {
+    private void refreshingNode(final TextField tf, MouseEvent event) {
 
-        final TextField tf = new TextField();
+        Text text = createText(tf.getText(), 15);
 
-        tf.setPromptText("Add a new item...");
+        double textWidth = text.getLayoutBounds().getWidth();
 
-        tf.requestFocus();
+        final Circle circle = createCircle(textWidth / 2 + 15, event.getScreenX(), event.getScreenY());
 
-        moveTextField(tf, cm.getX(), cm.getY());
-
-        applicationScreen.getChildren().add(tf);
-
-        tf.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-
-            public void handle(final KeyEvent keyEvent) {
-
-                if (keyEvent.getCode() == KeyCode.ENTER) {
-
-                    refreshingNode(tf);
-
-                    applicationScreen.requestFocus();
-
-                }
-            }
-
-        });
-
-    }
-
-    private void refreshingNode(final TextField tf) {
-
-        Text text = createText(tf.getText(), 10);
-
-        tf.setAlignment(CENTER);
-        //TODO: ustawic dlugosc textfielda automatycznie
-        //tf.setPrefWidth(text.getBoundsInLocal().getWidth());
-        double tfWidth = tf.getWidth();
-        double tfHeight = tf.getHeight();
-
-        final Circle circle = createCircle(tfWidth / 2,
-                cm.getX() - tfWidth / 2, cm.getY() - tfWidth / 2);
-
-        Group group = new Group(circle, tf);
+        Group group = new Group(circle, text);
 
         applicationScreen.getChildren().add(group);
 
-        moveTextField(tf, cm.getX() - tfWidth / 2, cm.getY() - tfHeight / 2);
-        //tf.setVisible(false);
+        moveText(text, event.getScreenX(), event.getScreenY());
+
+        tf.setVisible(false);
 
     }
 
-    private void moveTextField(TextField tf, double x, double y) {
+    private void moveText(Text text, double x, double y) {
 
-        tf.relocate(x, y);
+        double width = text.getBoundsInLocal().getWidth();
+        double height = text.getBoundsInLocal().getHeight();
+
+        text.relocate(x - width / 2, y - height / 2);
 
     }
 
@@ -136,7 +125,7 @@ public class ApplicationScreenController {
         final Circle circle = new Circle(radius);
 
         circle.setFill(Color.LIGHTBLUE);
-        circle.relocate(x, y);
+        circle.relocate(x - radius, y - radius);
 
         drawLine(cm.getX(), cm.getY(), 500, 500);
 

@@ -9,12 +9,12 @@ import javafx.scene.layout.StackPane;
 public class MainController {
 
     @FXML
-    private StackPane mainStackPane;
+    private StackPane mainPane;
 
     public void setScreen(Pane pane) {
 
-        mainStackPane.getChildren().clear();
-        mainStackPane.getChildren().add(pane);
+        mainPane.getChildren().clear();
+        mainPane.getChildren().add(pane);
 
     }
 
