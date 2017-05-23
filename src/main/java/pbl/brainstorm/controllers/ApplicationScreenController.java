@@ -127,8 +127,20 @@ public class ApplicationScreenController {
 
             });
 
-            cm.getItems().add(addMainNode);
+            if (mainNode != null) {
 
+                addMainNode.setDisable(true);
+                addNewNode.setDisable(false);
+
+            }
+
+            if (mainNode == null) {
+
+                addNewNode.setDisable(true);
+
+            }
+
+            cm.getItems().add(addMainNode);
             cm.getItems().add(addNewNode);
 
             cm.show(applicationScreen, event.getScreenX(), event.getScreenY());
@@ -149,6 +161,8 @@ public class ApplicationScreenController {
         double textWidth = text.getLayoutBounds().getWidth();
 
         final Rectangle shape = createRectangle(textWidth, event.getScreenX(), event.getScreenY());
+
+        list.add(new IdeaNode(text.getText(), event.getScreenX(), event.getScreenY(), false));
 
         Group group = new Group(shape, text);
 
@@ -204,19 +218,6 @@ public class ApplicationScreenController {
         double height = text.getBoundsInLocal().getHeight();
 
         text.relocate(x - width / 2, y - height / 2);
-
-    }
-
-    private Circle createCircle(double radius, double x, double y) {
-
-        final Circle shape = new Circle(radius);
-
-        shape.setFill(Color.LIGHTBLUE);
-        shape.relocate(x - radius, y - radius);
-
-        drawLine(cm.getX(), cm.getY(), mainNodeX, mainNodeY);
-
-        return shape;
 
     }
 
