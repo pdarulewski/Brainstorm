@@ -16,7 +16,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import javafx.scene.shape.StrokeLineJoin;
 import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
@@ -29,6 +31,8 @@ public class ApplicationScreenController {
     private final List<IdeaNode> list = new ArrayList<>();
 
     private IdeaNode mainNode = null;
+    private double collisionX;
+    private double collisionY;
 
     private MainController mainController;
 
@@ -255,11 +259,11 @@ public class ApplicationScreenController {
         shape.setStrokeWidth(10);
         shape.setFill(Color.web("#85bade"));
         shape.setStroke(Color.web("#3b596b"));
-
-        drawLine(cm.getX(), cm.getY(), xCentre, yCentre);
+        Line line = drawLine(cm.getX(), cm.getY(), xCentre, yCentre);
+        detectIntersection(line, shape);
+        createArrow();
 
         return shape;
-
     }
 
     private Text createText(String name, int fontSize) {
@@ -273,7 +277,7 @@ public class ApplicationScreenController {
 
     }
 
-    private void drawLine(double startX, double startY, double endX, double endY) {
+    private Line drawLine(double startX, double startY, double endX, double endY) {
 
         Line line = new Line();
 
@@ -283,8 +287,27 @@ public class ApplicationScreenController {
         line.setStartY(startY);
         line.setEndX(endX);
         line.setEndY(endY);
-
         applicationScreen.getChildren().add(line);
         line.toBack();
+        return line;
+    }
+
+    private void createArrow() {
+        Polygon arrow = new Polygon();
+        arrow.getPoints().addAll(new Double[]{
+            0.0, 0.0,
+            1000.0, 0.0,
+            600.0, 600.0});
+
+        arrow.setFill(Color.web("#85bade"));
+        
+        applicationScreen.getChildren().add(arrow);
+        arrow.toFront();
+    }
+
+    private void detectIntersection(Line line, Shape shape) {
+        Shape collisionArea = Shape.intersect(line, shape);
+        collisionX = collisionArea.getBoundsInParent().getMinX();
+        collisionY = collisionArea.getBoundsInParent().getMinY();
     }
 }
