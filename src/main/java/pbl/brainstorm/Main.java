@@ -27,6 +27,8 @@ public class Main extends Application {
 
         stage.setTitle("Brainstorm");
 
+        stage.setMaximized(true);
+        
         stage.show();
 
     }
