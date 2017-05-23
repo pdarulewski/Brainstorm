@@ -200,7 +200,7 @@ public class ApplicationScreenController {
 
         final Circle circle = new Circle(radius);
 
-        circle.setStroke(Color.RED);
+        circle.setStroke(Color.BROWN);
         circle.setStrokeWidth(10);
         circle.setStrokeType(StrokeType.INSIDE);
         circle.setFill(Color.ANTIQUEWHITE);
