@@ -167,6 +167,7 @@ public class ApplicationScreenController {
         Group group = new Group(shape, text);
 
         applicationScreen.getChildren().add(group);
+        
 
         moveText(text, event.getScreenX(), event.getScreenY());
 
