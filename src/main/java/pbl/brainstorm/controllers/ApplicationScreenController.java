@@ -29,8 +29,6 @@ public class ApplicationScreenController {
     private final List<IdeaNode> list = new ArrayList<>();
 
     private IdeaNode mainNode = null;
-    private double mainNodeX;
-    private double mainNodeY;
 
     private MainController mainController;
 
@@ -61,8 +59,41 @@ public class ApplicationScreenController {
 
             addNewNode.setOnAction(new EventHandler<ActionEvent>() {
 
+                double xCentre;
+                double yCentre;
+
                 @Override
                 public void handle(ActionEvent e) {
+
+                    final ContextMenu subMenu = new ContextMenu();
+
+                    for (final IdeaNode x : list) {
+
+                        String s = new String();
+
+                        if (x.isMain()) {
+
+                            s = "(MAIN NODE)";
+
+                        }
+
+                        final MenuItem item = new MenuItem(x.getContent() + " " + s);
+
+                        subMenu.getItems().add(item);
+
+                        item.setOnAction(new EventHandler<ActionEvent>() {
+
+                            @Override
+                            public void handle(ActionEvent t) {
+
+                                xCentre = x.getX();
+                                yCentre = x.getY();
+                            }
+
+                        });
+                    }
+
+                    subMenu.show(applicationScreen, event.getScreenX(), event.getScreenY());
 
                     final TextField tf = new TextField();
 
@@ -80,9 +111,7 @@ public class ApplicationScreenController {
 
                             if (keyEvent.getCode() == KeyCode.ENTER) {
 
-                                refreshingNode(tf, event);
-
-                                applicationScreen.requestFocus();
+                                refreshingNode(tf, event, xCentre, yCentre);
 
                             }
                         }
@@ -154,20 +183,19 @@ public class ApplicationScreenController {
         }
     }
 
-    private void refreshingNode(final TextField tf, MouseEvent event) {
+    private void refreshingNode(final TextField tf, MouseEvent event, double xCentre, double yCentre) {
 
         Text text = createText(tf.getText(), 15);
 
         double textWidth = text.getLayoutBounds().getWidth();
 
-        final Rectangle shape = createRectangle(textWidth, event.getScreenX(), event.getScreenY());
+        final Rectangle shape = createRectangle(textWidth, event.getScreenX(), event.getScreenY(), xCentre, yCentre);
 
         list.add(new IdeaNode(text.getText(), event.getScreenX(), event.getScreenY(), false));
 
         Group group = new Group(shape, text);
 
         applicationScreen.getChildren().add(group);
-        
 
         moveText(text, event.getScreenX(), event.getScreenY());
 
@@ -207,9 +235,6 @@ public class ApplicationScreenController {
         circle.setFill(Color.ANTIQUEWHITE);
         circle.relocate(x - radius, y - radius);
 
-        mainNodeX = x;
-        mainNodeY = y;
-
         return circle;
     }
 
@@ -222,7 +247,7 @@ public class ApplicationScreenController {
 
     }
 
-    private Rectangle createRectangle(double width, double x, double y) {
+    private Rectangle createRectangle(double width, double x, double y, double xCentre, double yCentre) {
 
         final Rectangle shape = new Rectangle(width + 20, 40);
 
@@ -232,7 +257,8 @@ public class ApplicationScreenController {
         shape.setStrokeWidth(10);
         shape.setFill(Color.web("#85bade"));
         shape.setStroke(Color.web("#3b596b"));
-        drawLine(cm.getX(), cm.getY(), mainNodeX, mainNodeY);
+
+        drawLine(cm.getX(), cm.getY(), xCentre, yCentre);
 
         return shape;
 
