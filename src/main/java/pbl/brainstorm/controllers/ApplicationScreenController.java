@@ -261,5 +261,6 @@ public class ApplicationScreenController {
         line.setEndY(endY);
 
         applicationScreen.getChildren().add(line);
+        line.toBack();
     }
 }
