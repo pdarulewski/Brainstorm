@@ -16,6 +16,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.StrokeLineJoin;
 import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -146,9 +148,9 @@ public class ApplicationScreenController {
 
         double textWidth = text.getLayoutBounds().getWidth();
 
-        final Circle circle = createCircle(textWidth / 2 + 15, event.getScreenX(), event.getScreenY());
+        final Rectangle shape = createRectangle(textWidth, event.getScreenX(), event.getScreenY());
 
-        Group group = new Group(circle, text);
+        Group group = new Group(shape, text);
 
         applicationScreen.getChildren().add(group);
 
@@ -207,14 +209,30 @@ public class ApplicationScreenController {
 
     private Circle createCircle(double radius, double x, double y) {
 
-        final Circle circle = new Circle(radius);
+        final Circle shape = new Circle(radius);
 
-        circle.setFill(Color.LIGHTBLUE);
-        circle.relocate(x - radius, y - radius);
+        shape.setFill(Color.LIGHTBLUE);
+        shape.relocate(x - radius, y - radius);
 
         drawLine(cm.getX(), cm.getY(), mainNodeX, mainNodeY);
 
-        return circle;
+        return shape;
+
+    }
+
+    private Rectangle createRectangle(double width, double x, double y) {
+
+        final Rectangle shape = new Rectangle(width + 20, 40);
+
+        shape.relocate(x - (width + 20) / 2, y - 20);
+        shape.setStrokeType(StrokeType.OUTSIDE);
+        shape.setStrokeLineJoin(StrokeLineJoin.ROUND);
+        shape.setStrokeWidth(10);
+        shape.setFill(Color.web("#85bade"));
+        shape.setStroke(Color.web("#3b596b"));
+        drawLine(cm.getX(), cm.getY(), 500, 500);
+
+        return shape;
 
     }
 
