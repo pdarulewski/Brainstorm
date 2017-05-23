@@ -230,7 +230,7 @@ public class ApplicationScreenController {
         shape.setStrokeWidth(10);
         shape.setFill(Color.web("#85bade"));
         shape.setStroke(Color.web("#3b596b"));
-        drawLine(cm.getX(), cm.getY(), 500, 500);
+        drawLine(cm.getX(), cm.getY(), mainNodeX, mainNodeY);
 
         return shape;
 
