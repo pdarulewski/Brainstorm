@@ -16,7 +16,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
-import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.scene.shape.StrokeLineJoin;
@@ -196,18 +195,16 @@ public class ApplicationScreenController {
         IdeaNode parent = null;
 
         for (IdeaNode x : list) {
-            
+
             if (x.getX() == xCentre && x.getY() == yCentre) {
-                
+
                 parent = x;
-                
+
             }
-            
+
         }
 
         list.add(new IdeaNode(text.getText(), event.getScreenX(), event.getScreenY(), false, parent));
-        
-        System.out.println(parent.getX() + "\n" + parent.getY());
 
         Group group = new Group(shape, text);
 
@@ -273,9 +270,7 @@ public class ApplicationScreenController {
         shape.setStrokeWidth(10);
         shape.setFill(Color.web("#85bade"));
         shape.setStroke(Color.web("#3b596b"));
-        Line line = drawLine(cm.getX(), cm.getY(), xCentre, yCentre);
-        detectIntersection(line, shape);
-        createArrow();
+        drawLine(shape, cm.getX(), cm.getY(), xCentre, yCentre);
 
         return shape;
     }
@@ -288,10 +283,11 @@ public class ApplicationScreenController {
         text.setBoundsType(TextBoundsType.VISUAL);
 
         return text;
+        
 
     }
 
-    private Line drawLine(double startX, double startY, double endX, double endY) {
+    private void drawLine(Shape shape, double startX, double startY, double endX, double endY) {
 
         Line line = new Line();
 
@@ -303,20 +299,13 @@ public class ApplicationScreenController {
         line.setEndY(endY);
         applicationScreen.getChildren().add(line);
         line.toBack();
-        return line;
+        detectIntersection(line, shape);
+        createArrow(line, startX, startY, endX, endY);
     }
 
-    private void createArrow() {
-        Polygon arrow = new Polygon();
-        arrow.getPoints().addAll(new Double[]{
-            0.0, 0.0,
-            1000.0, 0.0,
-            600.0, 600.0});
+    private void createArrow(Line line, double x1, double x2, double y1, double y2) {
 
-        arrow.setFill(Color.web("#85bade"));
 
-        applicationScreen.getChildren().add(arrow);
-        arrow.toFront();
     }
 
     private void detectIntersection(Line line, Shape shape) {
