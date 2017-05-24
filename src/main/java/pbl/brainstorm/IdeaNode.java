@@ -2,12 +2,13 @@ package pbl.brainstorm;
 
 public class IdeaNode {
 
-    public IdeaNode(String content, double x, double y, boolean main) {
+    public IdeaNode(String content, double x, double y, boolean main, IdeaNode parentNode) {
 
         this.content = content;
         this.x = x;
         this.y = y;
         this.main = main;
+        this.parentNode = parentNode;
 
     }
 
@@ -34,9 +35,16 @@ public class IdeaNode {
         return y;
 
     }
+    
+    public IdeaNode getParent() {
+        
+        return parentNode;
+        
+    }
 
     private final String content;
     private final double x;
     private final double y;
     private final boolean main;
+    private final IdeaNode parentNode;
 }

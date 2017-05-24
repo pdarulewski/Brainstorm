@@ -193,7 +193,21 @@ public class ApplicationScreenController {
 
         final Rectangle shape = createRectangle(textWidth, event.getScreenX(), event.getScreenY(), xCentre, yCentre);
 
-        list.add(new IdeaNode(text.getText(), event.getScreenX(), event.getScreenY(), false));
+        IdeaNode parent = null;
+
+        for (IdeaNode x : list) {
+            
+            if (x.getX() == xCentre && x.getY() == yCentre) {
+                
+                parent = x;
+                
+            }
+            
+        }
+
+        list.add(new IdeaNode(text.getText(), event.getScreenX(), event.getScreenY(), false, parent));
+        
+        System.out.println(parent.getX() + "\n" + parent.getY());
 
         Group group = new Group(shape, text);
 
@@ -213,7 +227,7 @@ public class ApplicationScreenController {
 
         final Circle circle = createMainNode(textWidth / 2 + 15, event.getScreenX(), event.getScreenY());
 
-        mainNode = new IdeaNode(text.getText(), event.getScreenX(), event.getScreenY(), true);
+        mainNode = new IdeaNode(text.getText(), event.getScreenX(), event.getScreenY(), true, null);
 
         list.add(mainNode);
 
@@ -300,7 +314,7 @@ public class ApplicationScreenController {
             600.0, 600.0});
 
         arrow.setFill(Color.web("#85bade"));
-        
+
         applicationScreen.getChildren().add(arrow);
         arrow.toFront();
     }
