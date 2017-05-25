@@ -1,10 +1,17 @@
 package pbl.brainstorm.controllers;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
+import java.util.concurrent.CountDownLatch;
+import javafx.application.Platform;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.Group;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -25,7 +32,7 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextBoundsType;
 import pbl.brainstorm.IdeaNode;
 
-public class ApplicationScreenController {
+public class ApplicationScreenController implements Initializable {
 
     private final List<IdeaNode> list = new ArrayList<>();
 
@@ -38,6 +45,91 @@ public class ApplicationScreenController {
     public void setMainController(MainController mainController) {
 
         this.mainController = mainController;
+
+    }
+
+//    private class Drawer extends Task<Void> {
+//
+//        @Override
+//        protected Void call() throws Exception {
+//
+//            if (list.isEmpty()) {
+//
+//                IdeaNode main = new IdeaNode("Main", 1000, 900, true, null);
+//                IdeaNode sub1 = new IdeaNode("1", 200, 300, false, main);
+//                IdeaNode sub2 = new IdeaNode("2", 600, 400, false, sub1);
+//                IdeaNode sub3 = new IdeaNode("3", 677, 200, false, main);
+//
+//                mainNode = main;
+//
+//                list.add(main);
+//                list.add(sub1);
+//                list.add(sub2);
+//                list.add(sub3);
+//
+//                drawGraph();
+//
+//            }
+//
+//            return null;
+//
+//        }
+//    }
+
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+
+//        Thread th = new Thread(new Drawer());
+//
+//        th.setDaemon(true);
+//
+//        th.start();
+
+    }
+
+    private void drawGraph() {
+
+        drawLines();
+
+        for (IdeaNode x : list) {
+
+            Text text = new Text(x.getContent());
+
+            double textWidth = text.getLayoutBounds().getWidth();
+
+            Group group = new Group();
+
+            if (x.isMain()) {
+
+                group.getChildren().add(createMainNode(textWidth, x.getX(), x.getY()));
+
+            } else {
+
+                group.getChildren().add(createRectangle(textWidth, x.getX(), x.getY(), x.getParent().getX(), x.getParent().getY()));
+
+            }
+
+            moveText(text, x.getX(), x.getY());
+
+            group.getChildren().add(text);
+
+            applicationScreen.getChildren().add(group);
+
+        }
+
+    }
+
+    private void drawLines() {
+
+        for (IdeaNode x : list) {
+
+            if (!x.isMain()) {
+
+                applicationScreen.getChildren().add(drawLineGraph(x));
+
+            }
+
+        }
 
     }
 
@@ -283,7 +375,6 @@ public class ApplicationScreenController {
         text.setBoundsType(TextBoundsType.VISUAL);
 
         return text;
-        
 
     }
 
@@ -303,14 +394,31 @@ public class ApplicationScreenController {
         createArrow(line, startX, startY, endX, endY);
     }
 
-    private void createArrow(Line line, double x1, double x2, double y1, double y2) {
+    private Line drawLineGraph(IdeaNode node) {
 
+        Line line = new Line();
+
+        line.setStroke(Color.LIGHTGRAY);
+        line.setStrokeWidth(3);
+        line.setStartX(node.getX());
+        line.setStartY(node.getY());
+        line.setEndX(node.getParent().getX());
+        line.setEndY(node.getParent().getY());
+
+        return line;
+
+    }
+
+    private void createArrow(Line line, double x1, double x2, double y1, double y2) {
 
     }
 
     private void detectIntersection(Line line, Shape shape) {
+
         Shape collisionArea = Shape.intersect(line, shape);
         collisionX = collisionArea.getBoundsInParent().getMinX();
         collisionY = collisionArea.getBoundsInParent().getMinY();
+
     }
 }
+
