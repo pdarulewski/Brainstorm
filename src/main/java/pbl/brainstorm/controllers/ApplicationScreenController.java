@@ -2,12 +2,12 @@ package pbl.brainstorm.controllers;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -34,6 +34,9 @@ import pbl.brainstorm.IdeaNode;
 
 public class ApplicationScreenController implements Initializable {
 
+    private static final String SERVER_IP = "127.0.0.1";
+    private static final int SERVER_PORT = 6789;
+
     private List<IdeaNode> list = new ArrayList<>();
 
     private IdeaNode mainNode = null;
@@ -42,6 +45,7 @@ public class ApplicationScreenController implements Initializable {
 
     private Socket socket;
     private ObjectInputStream objectInput;
+    private ObjectOutputStream objectOutput;
 
     private MainController mainController;
 
@@ -255,6 +259,31 @@ public class ApplicationScreenController implements Initializable {
 
                                 refreshingNode(tf, event, xCentre, yCentre);
 
+                                try {
+
+                                    socket = new Socket(SERVER_IP, SERVER_PORT);
+
+                                } catch (IOException e) {
+
+                                    System.out.println("Socket problem!");
+
+                                }
+
+                                try (ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());) {
+
+                                    output.writeObject(list);
+
+                                    output.flush();
+
+                                    socket.close();
+
+                                } catch (IOException e) {
+
+                                    e.printStackTrace();
+                                    System.out.println("The socket for reading the object has problem");
+
+                                }
+
                             }
                         }
 
@@ -287,6 +316,31 @@ public class ApplicationScreenController implements Initializable {
 
                                 refreshingMainNode(tf, event);
 
+                                try {
+
+                                    socket = new Socket(SERVER_IP, SERVER_PORT);
+
+                                } catch (IOException e) {
+
+                                    System.out.println("Socket problem!");
+
+                                }
+
+                                try (ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());) {
+
+                                    output.writeObject(list);
+
+                                    output.flush();
+
+                                    socket.close();
+
+                                } catch (IOException e) {
+
+                                    e.printStackTrace();
+                                    System.out.println("The socket for reading the object has problem");
+
+                                }
+
                             }
                         }
 
@@ -303,7 +357,7 @@ public class ApplicationScreenController implements Initializable {
 
                     try {
 
-                        socket = new Socket("127.0.0.1", 6789);
+                        socket = new Socket(SERVER_IP, SERVER_PORT);
 
                     } catch (IOException e) {
 
@@ -313,11 +367,14 @@ public class ApplicationScreenController implements Initializable {
 
                     try {
 
+                        objectOutput = new ObjectOutputStream(socket.getOutputStream());
                         objectInput = new ObjectInputStream(socket.getInputStream());
 
                         try {
 
                             list = (ArrayList<IdeaNode>) objectInput.readObject();
+
+                            objectOutput.close();
 
                             objectInput.close();
 
