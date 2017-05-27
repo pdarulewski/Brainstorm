@@ -1,6 +1,8 @@
 package pbl.brainstorm;
 
 import java.io.Serializable;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 public class IdeaNode implements Serializable {
 
@@ -19,6 +21,13 @@ public class IdeaNode implements Serializable {
     public boolean isMain() {
 
         return main;
+
+    }
+
+    @Override
+    public String toString() {
+
+        return new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE).append(content).append(x).append(y).append(main).toString();
 
     }
 

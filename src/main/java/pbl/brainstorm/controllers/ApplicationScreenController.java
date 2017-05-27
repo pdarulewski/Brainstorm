@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -42,6 +41,7 @@ public class ApplicationScreenController implements Initializable {
     private double collisionY;
 
     private Socket socket;
+    private ObjectInputStream objectInput;
 
     private MainController mainController;
 
@@ -51,92 +51,56 @@ public class ApplicationScreenController implements Initializable {
 
     }
 
-    private class Drawer extends Task<Void> {
-
-        @Override
-        protected Void call() throws Exception {
-
-            while (true) {
-                try {
-
-                    ObjectInputStream objectInput = new ObjectInputStream(socket.getInputStream());
-
-                    try {
-
-                        Object object = objectInput.readObject();
-
-                        list = (ArrayList<IdeaNode>) object;
-
-                        assignMainNode();
-
-                    } catch (ClassNotFoundException e) {
-
-                        System.out.println("The list has not come from the server");
-
-                        e.printStackTrace();
-
-                    }
-                } catch (IOException e) {
-
-                    System.out.println("The socket for reading the object has problem");
-
-                    e.printStackTrace();
-
-                }
-
-                Thread.sleep(1000);
-
-            }
-
-        }
-
-    }
-
+//    private class Drawer extends Task<Void> {
+//
+//        @Override
+//        protected Void call() throws Exception {
+//
+//            while (true) {
+//                try {
+//
+//                    objectInput = new ObjectInputStream(socket.getInputStream());
+//
+//                    try {
+//
+//                        Object object = objectInput.readObject();
+//
+//                        list = (ArrayList<IdeaNode>) object;
+//
+//                        applicationScreen.getChildren().clear();
+//
+//                        assignMainNode();
+//
+//                        drawGraph();
+//
+//                    } catch (ClassNotFoundException e) {
+//
+//                        System.out.println("The list has not come from the server");
+//
+//                        e.printStackTrace();
+//
+//                    }
+//                } catch (IOException e) {
+//
+//                    System.out.println("The socket for reading the object has problem");
+//
+//                    e.printStackTrace();
+//
+//                }
+//
+//                Thread.sleep(1000);
+//
+//            }
+//
+//        }
+//
+//    }
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-
-        try {
-
-            socket = new Socket("127.0.0.1", 6789);
-
-        } catch (IOException e) {
-
-            e.printStackTrace();
-
-        }
 
 //        Drawer taskDraw = new Drawer();
 //
 //        new Thread(taskDraw).start();
-        try {
-
-            ObjectInputStream objectInput = new ObjectInputStream(socket.getInputStream());
-
-            try {
-
-                Object object = objectInput.readObject();
-
-                list = (ArrayList<IdeaNode>) object;
-
-                assignMainNode();
-
-                drawGraph();
-
-            } catch (ClassNotFoundException e) {
-
-                System.out.println("The list has not come from the server");
-
-                e.printStackTrace();
-
-            }
-        } catch (IOException e) {
-
-            System.out.println("The socket for reading the object has problem");
-
-            e.printStackTrace();
-
-        }
-
     }
 
     private void assignMainNode() {
@@ -172,7 +136,7 @@ public class ApplicationScreenController implements Initializable {
 
             } else {
 
-                group.getChildren().add(createRectangle(textWidth, x.getX(), x.getY(), x.getParent().getX(), x.getParent().getY()));
+                group.getChildren().add(createRectangle(textWidth, x.getX(), x.getY(), x.getParent().getX(), x.getParent().getY(), false));
 
             }
 
@@ -200,6 +164,21 @@ public class ApplicationScreenController implements Initializable {
 
     }
 
+    private Line drawLineGraph(IdeaNode node) {
+
+        Line line = new Line();
+
+        line.setStroke(Color.LIGHTGRAY);
+        line.setStrokeWidth(3);
+        line.setStartX(node.getX());
+        line.setStartY(node.getY());
+        line.setEndX(node.getParent().getX());
+        line.setEndY(node.getParent().getY());
+
+        return line;
+
+    }
+
     @FXML
     private Pane applicationScreen;
 
@@ -207,6 +186,7 @@ public class ApplicationScreenController implements Initializable {
 
     final MenuItem addNewNode = new MenuItem("Add a new node...");
     final MenuItem addMainNode = new MenuItem("Add the main node...");
+    final MenuItem refreshList = new MenuItem("Synchronise with server...");
 
     @FXML
     private void handleMousePressed(final MouseEvent event) {
@@ -316,6 +296,52 @@ public class ApplicationScreenController implements Initializable {
 
             });
 
+            refreshList.setOnAction(new EventHandler<ActionEvent>() {
+
+                @Override
+                public void handle(ActionEvent t) {
+
+                    try {
+
+                        socket = new Socket("127.0.0.1", 6789);
+
+                    } catch (IOException e) {
+
+                        System.out.println("Socket problem!");
+
+                    }
+
+                    try {
+
+                        objectInput = new ObjectInputStream(socket.getInputStream());
+
+                        try {
+
+                            list = (ArrayList<IdeaNode>) objectInput.readObject();
+
+                            objectInput.close();
+
+                            socket.close();
+
+                            assignMainNode();
+
+                            applicationScreen.getChildren().clear();
+
+                            drawGraph();
+
+                        } catch (ClassNotFoundException e) {
+
+                            System.out.println("The list has not come from the server");
+
+                        }
+                    } catch (IOException e) {
+
+                        System.out.println("The socket for reading the object has problem");
+
+                    }
+                }
+            });
+
             if (mainNode != null) {
 
                 addMainNode.setDisable(true);
@@ -331,6 +357,7 @@ public class ApplicationScreenController implements Initializable {
 
             cm.getItems().add(addMainNode);
             cm.getItems().add(addNewNode);
+            cm.getItems().add(refreshList);
 
             cm.show(applicationScreen, event.getScreenX(), event.getScreenY());
 
@@ -349,7 +376,7 @@ public class ApplicationScreenController implements Initializable {
 
         double textWidth = text.getLayoutBounds().getWidth();
 
-        final Rectangle shape = createRectangle(textWidth, event.getScreenX(), event.getScreenY(), xCentre, yCentre);
+        final Rectangle shape = createRectangle(textWidth, event.getScreenX(), event.getScreenY(), xCentre, yCentre, true);
 
         IdeaNode parent = null;
 
@@ -419,7 +446,7 @@ public class ApplicationScreenController implements Initializable {
 
     }
 
-    private Rectangle createRectangle(double width, double x, double y, double xCentre, double yCentre) {
+    private Rectangle createRectangle(double width, double x, double y, double xCentre, double yCentre, boolean drawLine) {
 
         final Rectangle shape = new Rectangle(width + 20, 40);
 
@@ -429,7 +456,10 @@ public class ApplicationScreenController implements Initializable {
         shape.setStrokeWidth(10);
         shape.setFill(Color.web("#85bade"));
         shape.setStroke(Color.web("#3b596b"));
-        drawLine(shape, cm.getX(), cm.getY(), xCentre, yCentre);
+
+        if (drawLine) {
+            drawLine(shape, cm.getX(), cm.getY(), xCentre, yCentre);
+        }
 
         return shape;
     }
@@ -459,21 +489,6 @@ public class ApplicationScreenController implements Initializable {
         line.toBack();
         detectIntersection(line, shape);
         createArrow(line, startX, startY, endX, endY);
-    }
-
-    private Line drawLineGraph(IdeaNode node) {
-
-        Line line = new Line();
-
-        line.setStroke(Color.LIGHTGRAY);
-        line.setStrokeWidth(3);
-        line.setStartX(node.getX());
-        line.setStartY(node.getY());
-        line.setEndX(node.getParent().getX());
-        line.setEndY(node.getParent().getY());
-
-        return line;
-
     }
 
     private void createArrow(Line line, double x1, double x2, double y1, double y2) {
