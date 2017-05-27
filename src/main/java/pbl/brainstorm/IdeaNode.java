@@ -1,6 +1,10 @@
 package pbl.brainstorm;
 
-public class IdeaNode {
+import java.io.Serializable;
+
+public class IdeaNode implements Serializable {
+
+    static final long serialVersionUID = 423278748783209732L;
 
     public IdeaNode(String content, double x, double y, boolean main, IdeaNode parentNode) {
 
@@ -35,11 +39,11 @@ public class IdeaNode {
         return y;
 
     }
-    
+
     public IdeaNode getParent() {
-        
+
         return parentNode;
-        
+
     }
 
     private final String content;

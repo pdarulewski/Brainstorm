@@ -1,6 +1,10 @@
 package pbl.brainstorm.controllers;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.Socket;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -31,11 +35,13 @@ import pbl.brainstorm.IdeaNode;
 
 public class ApplicationScreenController implements Initializable {
 
-    private final List<IdeaNode> list = new ArrayList<>();
+    private List<IdeaNode> list = new ArrayList<>();
 
     private IdeaNode mainNode = null;
     private double collisionX;
     private double collisionY;
+
+    private Socket socket;
 
     private MainController mainController;
 
@@ -51,11 +57,32 @@ public class ApplicationScreenController implements Initializable {
         protected Void call() throws Exception {
 
             while (true) {
+                try {
 
-             
-                //drawGraph();
-                
-                System.out.println("Running!!");
+                    ObjectInputStream objectInput = new ObjectInputStream(socket.getInputStream());
+
+                    try {
+
+                        Object object = objectInput.readObject();
+
+                        list = (ArrayList<IdeaNode>) object;
+
+                        assignMainNode();
+
+                    } catch (ClassNotFoundException e) {
+
+                        System.out.println("The list has not come from the server");
+
+                        e.printStackTrace();
+
+                    }
+                } catch (IOException e) {
+
+                    System.out.println("The socket for reading the object has problem");
+
+                    e.printStackTrace();
+
+                }
 
                 Thread.sleep(1000);
 
@@ -68,21 +95,62 @@ public class ApplicationScreenController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
-        IdeaNode main = new IdeaNode("Main", 1000, 900, true, null);
-        IdeaNode sub1 = new IdeaNode("1", 200, 300, false, main);
-        IdeaNode sub2 = new IdeaNode("2", 600, 400, false, sub1);
-        IdeaNode sub3 = new IdeaNode("3", 677, 200, false, main);
+        try {
 
-        mainNode = main;
+            socket = new Socket("127.0.0.1", 6789);
 
-        list.add(main);
-        list.add(sub1);
-        list.add(sub2);
-        list.add(sub3);
+        } catch (IOException e) {
 
-        Drawer taskDraw = new Drawer();
+            e.printStackTrace();
 
-        new Thread(taskDraw).start();
+        }
+
+//        Drawer taskDraw = new Drawer();
+//
+//        new Thread(taskDraw).start();
+        try {
+
+            ObjectInputStream objectInput = new ObjectInputStream(socket.getInputStream());
+
+            try {
+
+                Object object = objectInput.readObject();
+
+                list = (ArrayList<IdeaNode>) object;
+
+                assignMainNode();
+
+                drawGraph();
+
+            } catch (ClassNotFoundException e) {
+
+                System.out.println("The list has not come from the server");
+
+                e.printStackTrace();
+
+            }
+        } catch (IOException e) {
+
+            System.out.println("The socket for reading the object has problem");
+
+            e.printStackTrace();
+
+        }
+
+    }
+
+    private void assignMainNode() {
+
+        for (IdeaNode x : list) {
+
+            if (x.isMain()) {
+
+                mainNode = x;
+                break;
+
+            }
+
+        }
 
     }
 
