@@ -43,10 +43,6 @@ public class ApplicationScreenController implements Initializable {
     private double collisionX;
     private double collisionY;
 
-    private Socket socket;
-    private ObjectInputStream objectInput;
-    private ObjectOutputStream objectOutput;
-
     private MainController mainController;
 
     public void setMainController(MainController mainController) {
@@ -259,23 +255,12 @@ public class ApplicationScreenController implements Initializable {
 
                                 refreshingNode(tf, event, xCentre, yCentre);
 
-                                try {
-
-                                    socket = new Socket(SERVER_IP, SERVER_PORT);
-
-                                } catch (IOException e) {
-
-                                    System.out.println("Socket problem!");
-
-                                }
-
-                                try (ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());) {
+                                try (Socket socketOut = new Socket(SERVER_IP, SERVER_PORT);
+                                        ObjectOutputStream output = new ObjectOutputStream(socketOut.getOutputStream());) {
 
                                     output.writeObject(list);
 
                                     output.flush();
-
-                                    socket.close();
 
                                 } catch (IOException e) {
 
@@ -316,23 +301,12 @@ public class ApplicationScreenController implements Initializable {
 
                                 refreshingMainNode(tf, event);
 
-                                try {
-
-                                    socket = new Socket(SERVER_IP, SERVER_PORT);
-
-                                } catch (IOException e) {
-
-                                    System.out.println("Socket problem!");
-
-                                }
-
-                                try (ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());) {
+                                try (Socket socketOut = new Socket(SERVER_IP, SERVER_PORT);
+                                        ObjectOutputStream output = new ObjectOutputStream(socketOut.getOutputStream());) {
 
                                     output.writeObject(list);
 
                                     output.flush();
-
-                                    socket.close();
 
                                 } catch (IOException e) {
 
@@ -355,45 +329,26 @@ public class ApplicationScreenController implements Initializable {
                 @Override
                 public void handle(ActionEvent t) {
 
-                    try {
+                    try (Socket socketIn = new Socket(SERVER_IP, SERVER_PORT);
+                            //Socket socketOut = new Socket(SERVER_IP, SERVER_PORT);
+                            ObjectInputStream input = new ObjectInputStream(socketIn.getInputStream());
+                            /*ObjectOutputStream output = new ObjectOutputStream(socketOut.getOutputStream());*/) {
 
-                        socket = new Socket(SERVER_IP, SERVER_PORT);
+                        list = (ArrayList<IdeaNode>) input.readObject();
 
-                    } catch (IOException e) {
+                        assignMainNode();
 
-                        System.out.println("Socket problem!");
+                        applicationScreen.getChildren().clear();
 
-                    }
+                        drawGraph();
 
-                    try {
+                    } catch (ClassNotFoundException e) {
 
-                        objectOutput = new ObjectOutputStream(socket.getOutputStream());
-                        objectInput = new ObjectInputStream(socket.getInputStream());
+                        System.out.println("The list has not come from the server");
 
-                        try {
+                    } catch (IOException ex) {
 
-                            list = (ArrayList<IdeaNode>) objectInput.readObject();
-
-                            objectOutput.close();
-
-                            objectInput.close();
-
-                            socket.close();
-
-                            assignMainNode();
-
-                            applicationScreen.getChildren().clear();
-
-                            drawGraph();
-
-                        } catch (ClassNotFoundException e) {
-
-                            System.out.println("The list has not come from the server");
-
-                        }
-                    } catch (IOException e) {
-
-                        System.out.println("The socket for reading the object has problem");
+                        ex.printStackTrace();
 
                     }
                 }
