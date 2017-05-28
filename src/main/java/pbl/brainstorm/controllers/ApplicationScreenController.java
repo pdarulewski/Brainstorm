@@ -8,6 +8,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -255,17 +257,24 @@ public class ApplicationScreenController implements Initializable {
 
                                 refreshingNode(tf, event, xCentre, yCentre);
 
-                                try (Socket socketOut = new Socket(SERVER_IP, SERVER_PORT);
-                                        ObjectOutputStream output = new ObjectOutputStream(socketOut.getOutputStream());) {
+                                try (Socket socket = new Socket(SERVER_IP, SERVER_PORT);
+                                        ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+                                        ObjectInputStream input = new ObjectInputStream(socket.getInputStream());) {
 
                                     output.writeObject(list);
 
                                     output.flush();
 
+                                    ArrayList<IdeaNode> trash = (ArrayList<IdeaNode>) input.readObject();
+
                                 } catch (IOException e) {
 
                                     e.printStackTrace();
                                     System.out.println("The socket for reading the object has problem");
+
+                                } catch (ClassNotFoundException ex) {
+
+                                    ex.printStackTrace();
 
                                 }
 
@@ -301,17 +310,24 @@ public class ApplicationScreenController implements Initializable {
 
                                 refreshingMainNode(tf, event);
 
-                                try (Socket socketOut = new Socket(SERVER_IP, SERVER_PORT);
-                                        ObjectOutputStream output = new ObjectOutputStream(socketOut.getOutputStream());) {
+                                try (Socket socket = new Socket(SERVER_IP, SERVER_PORT);
+                                        ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+                                        ObjectInputStream input = new ObjectInputStream(socket.getInputStream());) {
 
                                     output.writeObject(list);
 
                                     output.flush();
 
+                                    ArrayList<IdeaNode> trash = (ArrayList<IdeaNode>) input.readObject();
+
                                 } catch (IOException e) {
 
                                     e.printStackTrace();
                                     System.out.println("The socket for reading the object has problem");
+
+                                } catch (ClassNotFoundException ex) {
+
+                                    ex.printStackTrace();
 
                                 }
 
@@ -329,10 +345,12 @@ public class ApplicationScreenController implements Initializable {
                 @Override
                 public void handle(ActionEvent t) {
 
-                    try (Socket socketIn = new Socket(SERVER_IP, SERVER_PORT);
-                            //Socket socketOut = new Socket(SERVER_IP, SERVER_PORT);
-                            ObjectInputStream input = new ObjectInputStream(socketIn.getInputStream());
-                            /*ObjectOutputStream output = new ObjectOutputStream(socketOut.getOutputStream());*/) {
+                    try (Socket socket = new Socket(SERVER_IP, SERVER_PORT);
+                            ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+                            ObjectInputStream input = new ObjectInputStream(socket.getInputStream());) {
+
+                        output.writeObject(list);
+                        output.flush();
 
                         list = (ArrayList<IdeaNode>) input.readObject();
 
