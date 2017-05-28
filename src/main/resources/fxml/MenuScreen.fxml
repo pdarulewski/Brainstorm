@@ -12,7 +12,7 @@
       <Label fx:id="emptyProblemField" alignment="CENTER" contentDisplay="CENTER" layoutX="90.0" layoutY="127.0" prefHeight="14.0" prefWidth="220.0" text="*This field cannot be empty!" textFill="RED" visible="false" />
       <TextField fx:id="addressField" layoutX="115.0" layoutY="200.0" text="127.0.0.1" />
       <Label layoutX="149.0" layoutY="169.0" text="Server address:" />
-      <TextField fx:id="portField" layoutX="115.0" layoutY="258.0" text="6789" />
+      <TextField fx:id="portField" layoutX="115.0" layoutY="258.0" text="49160" />
       <Label layoutX="161.0" layoutY="234.0" text="Server port:" />
    </children>
 </Pane>
