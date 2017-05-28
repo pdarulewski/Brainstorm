@@ -36,8 +36,8 @@ import pbl.brainstorm.IdeaNode;
 
 public class ApplicationScreenController implements Initializable {
 
-    private static final String SERVER_IP = "127.0.0.1";
-    private static final int SERVER_PORT = 6789;
+    private String serverIP;
+    private int serverPort;
 
     @FXML
     private Pane applicationScreen;
@@ -55,10 +55,29 @@ public class ApplicationScreenController implements Initializable {
     private double collisionY;
 
     private MainController mainController;
+    private MenuController menuController;
 
     public void setMainController(MainController mainController) {
 
         this.mainController = mainController;
+
+    }
+
+    public void setMenuController(MenuController menuController) {
+
+        this.menuController = menuController;
+
+    }
+
+    public void setAddress(String address) {
+
+        this.serverIP = address;
+
+    }
+
+    public void setPort(int port) {
+
+        this.serverPort = port;
 
     }
 
@@ -69,7 +88,7 @@ public class ApplicationScreenController implements Initializable {
 
             while (true) {
 
-                try (Socket socket = new Socket(SERVER_IP, SERVER_PORT);
+                try (Socket socket = new Socket(serverIP, serverPort);
                         ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
                         ObjectInputStream input = new ObjectInputStream(socket.getInputStream());) {
 
@@ -117,7 +136,6 @@ public class ApplicationScreenController implements Initializable {
 //
 //            }
 //        });
-
     }
 
     private void assignMainNode() {
@@ -263,7 +281,7 @@ public class ApplicationScreenController implements Initializable {
 
                                 refreshingNode(tf, event, xCentre, yCentre);
 
-                                try (Socket socket = new Socket(SERVER_IP, SERVER_PORT);
+                                try (Socket socket = new Socket(serverIP, serverPort);
                                         ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
                                         ObjectInputStream input = new ObjectInputStream(socket.getInputStream());) {
 
@@ -316,7 +334,7 @@ public class ApplicationScreenController implements Initializable {
 
                                 refreshingMainNode(tf, event);
 
-                                try (Socket socket = new Socket(SERVER_IP, SERVER_PORT);
+                                try (Socket socket = new Socket(serverIP, serverPort);
                                         ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
                                         ObjectInputStream input = new ObjectInputStream(socket.getInputStream());) {
 
@@ -351,7 +369,7 @@ public class ApplicationScreenController implements Initializable {
                 @Override
                 public void handle(ActionEvent t) {
 
-                    try (Socket socket = new Socket(SERVER_IP, SERVER_PORT);
+                    try (Socket socket = new Socket(serverIP, serverPort);
                             ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
                             ObjectInputStream input = new ObjectInputStream(socket.getInputStream());) {
 
