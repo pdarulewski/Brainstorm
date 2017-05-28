@@ -8,8 +8,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -32,12 +31,22 @@ import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextBoundsType;
+import javafx.stage.WindowEvent;
 import pbl.brainstorm.IdeaNode;
 
 public class ApplicationScreenController implements Initializable {
 
     private static final String SERVER_IP = "127.0.0.1";
     private static final int SERVER_PORT = 6789;
+
+    @FXML
+    private Pane applicationScreen;
+
+    final ContextMenu cm = new ContextMenu();
+
+    final MenuItem addNewNode = new MenuItem("Add a new node...");
+    final MenuItem addMainNode = new MenuItem("Add the main node...");
+    final MenuItem refreshList = new MenuItem("Synchronise with server...");
 
     private List<IdeaNode> list = new ArrayList<>();
 
@@ -53,56 +62,62 @@ public class ApplicationScreenController implements Initializable {
 
     }
 
-//    private class Drawer extends Task<Void> {
-//
-//        @Override
-//        protected Void call() throws Exception {
-//
-//            while (true) {
-//                try {
-//
-//                    objectInput = new ObjectInputStream(socket.getInputStream());
-//
-//                    try {
-//
-//                        Object object = objectInput.readObject();
-//
-//                        list = (ArrayList<IdeaNode>) object;
-//
-//                        applicationScreen.getChildren().clear();
-//
-//                        assignMainNode();
-//
-//                        drawGraph();
-//
-//                    } catch (ClassNotFoundException e) {
-//
-//                        System.out.println("The list has not come from the server");
-//
-//                        e.printStackTrace();
-//
-//                    }
-//                } catch (IOException e) {
-//
-//                    System.out.println("The socket for reading the object has problem");
-//
-//                    e.printStackTrace();
-//
-//                }
-//
-//                Thread.sleep(1000);
-//
-//            }
-//
-//        }
-//
-//    }
+    private class Drawer extends Task<Void> {
+
+        @Override
+        protected Void call() throws Exception {
+
+            while (true) {
+
+                try (Socket socket = new Socket(SERVER_IP, SERVER_PORT);
+                        ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+                        ObjectInputStream input = new ObjectInputStream(socket.getInputStream());) {
+
+                    output.writeObject(list);
+                    output.flush();
+
+                    list = (ArrayList<IdeaNode>) input.readObject();
+
+                    assignMainNode();
+
+                    //applicationScreen.getChildren().clear();
+                    //drawGraph();
+                } catch (ClassNotFoundException e) {
+
+                    System.out.println("The list has not come from the server");
+
+                } catch (IOException ex) {
+
+                    ex.printStackTrace();
+
+                }
+
+                Thread.sleep(1000);
+
+            }
+        }
+
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
 //        Drawer taskDraw = new Drawer();
 //
-//        new Thread(taskDraw).start();
+//        Thread thread = new Thread(taskDraw);
+//
+//        thread.start();
+//
+//        applicationScreen.getScene().getWindow().setOnCloseRequest(new EventHandler<WindowEvent>() {
+//
+//            @Override
+//            public void handle(WindowEvent t) {
+//
+//                thread.interrupt();
+//
+//            }
+//        });
+
     }
 
     private void assignMainNode() {
@@ -126,7 +141,7 @@ public class ApplicationScreenController implements Initializable {
 
         for (IdeaNode x : list) {
 
-            Text text = new Text(x.getContent());
+            Text text = createText(x.getContent(), 15);
 
             double textWidth = text.getLayoutBounds().getWidth();
 
@@ -134,7 +149,7 @@ public class ApplicationScreenController implements Initializable {
 
             if (x.isMain()) {
 
-                group.getChildren().add(createMainNode(textWidth, x.getX(), x.getY()));
+                group.getChildren().add(createMainNode(textWidth / 2 + 15, x.getX(), x.getY()));
 
             } else {
 
@@ -180,15 +195,6 @@ public class ApplicationScreenController implements Initializable {
         return line;
 
     }
-
-    @FXML
-    private Pane applicationScreen;
-
-    final ContextMenu cm = new ContextMenu();
-
-    final MenuItem addNewNode = new MenuItem("Add a new node...");
-    final MenuItem addMainNode = new MenuItem("Add the main node...");
-    final MenuItem refreshList = new MenuItem("Synchronise with server...");
 
     @FXML
     private void handleMousePressed(final MouseEvent event) {
