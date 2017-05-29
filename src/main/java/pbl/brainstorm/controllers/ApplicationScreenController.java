@@ -38,7 +38,7 @@ import pbl.brainstorm.IdeaNode;
 
 public class ApplicationScreenController implements Initializable {
 
-    private static final int SLEEP_TIME = 1;
+    private static final int SLEEP_TIME = 500;
 
     @FXML
     private Pane applicationScreen;
