@@ -67,12 +67,8 @@ public class MenuController implements Initializable {
 
             ApplicationScreenController appController = loader.getController();
 
-            appController.setMainController(mainController);
-
-            appController.setMenuController(this);
-            
             appController.setAddress(addressField.getText());
-            
+
             appController.setPort(Integer.valueOf(portField.getText()));
 
             mainController.setScreen(pane);

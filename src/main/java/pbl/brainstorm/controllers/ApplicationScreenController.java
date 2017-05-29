@@ -8,12 +8,15 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
@@ -31,43 +34,28 @@ import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextBoundsType;
-import javafx.stage.WindowEvent;
 import pbl.brainstorm.IdeaNode;
 
 public class ApplicationScreenController implements Initializable {
 
-    private String serverIP;
-    private int serverPort;
+    private static final int SLEEP_TIME = 1;
 
     @FXML
     private Pane applicationScreen;
 
-    final ContextMenu cm = new ContextMenu();
+    private final ContextMenu cm = new ContextMenu();
 
-    final MenuItem addNewNode = new MenuItem("Add a new node...");
-    final MenuItem addMainNode = new MenuItem("Add the main node...");
-    final MenuItem refreshList = new MenuItem("Synchronise with server...");
+    private final MenuItem addMainNode = new MenuItem("Add the main node...");
+    private final MenuItem addNewNode = new MenuItem("Add a new node...");
 
     private List<IdeaNode> list = new ArrayList<>();
-
     private IdeaNode mainNode = null;
-    private double collisionX;
-    private double collisionY;
 
-    private MainController mainController;
-    private MenuController menuController;
+    private double collisionX; // To remove?
+    private double collisionY; // To remove?
 
-    public void setMainController(MainController mainController) {
-
-        this.mainController = mainController;
-
-    }
-
-    public void setMenuController(MenuController menuController) {
-
-        this.menuController = menuController;
-
-    }
+    private String serverIP;
+    private int serverPort;
 
     public void setAddress(String address) {
 
@@ -99,8 +87,12 @@ public class ApplicationScreenController implements Initializable {
 
                     assignMainNode();
 
-                    //applicationScreen.getChildren().clear();
-                    //drawGraph();
+                    ObservableList<Node> tempList = applicationScreen.getChildren();
+
+                    Platform.runLater(() -> removeFromGUI(tempList));
+
+                    Platform.runLater(() -> drawGraph());
+
                 } catch (ClassNotFoundException e) {
 
                     System.out.println("The list has not come from the server");
@@ -109,33 +101,45 @@ public class ApplicationScreenController implements Initializable {
 
                     ex.printStackTrace();
 
+                } catch (Exception exc) {
+
+                    System.out.println(exc);
+
                 }
 
-                Thread.sleep(1000);
+                Thread.sleep(SLEEP_TIME);
+
+            }
+
+        }
+
+    }
+
+    private void removeFromGUI(ObservableList<Node> tempList) {
+
+        for (int i = 0; i < tempList.size(); i++) {
+
+            Node x = tempList.get(i);
+
+            if (!(x instanceof TextField)) {
+
+                tempList.remove(x);
 
             }
         }
-
     }
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
-//        Drawer taskDraw = new Drawer();
-//
-//        Thread thread = new Thread(taskDraw);
-//
-//        thread.start();
-//
-//        applicationScreen.getScene().getWindow().setOnCloseRequest(new EventHandler<WindowEvent>() {
-//
-//            @Override
-//            public void handle(WindowEvent t) {
-//
-//                thread.interrupt();
-//
-//            }
-//        });
+        Drawer taskDraw = new Drawer();
+
+        Thread thread = new Thread(taskDraw);
+
+        thread.setDaemon(true);
+
+        thread.start();
+
     }
 
     private void assignMainNode() {
@@ -171,7 +175,7 @@ public class ApplicationScreenController implements Initializable {
 
             } else {
 
-                group.getChildren().add(createRectangle(textWidth, x.getX(), x.getY(), x.getParent().getX(), x.getParent().getY(), false));
+                group.getChildren().add(createRectangle(textWidth, x.getX(), x.getY(), x.getParent().getX(), x.getParent().getY()));
 
             }
 
@@ -364,38 +368,6 @@ public class ApplicationScreenController implements Initializable {
 
             });
 
-            refreshList.setOnAction(new EventHandler<ActionEvent>() {
-
-                @Override
-                public void handle(ActionEvent t) {
-
-                    try (Socket socket = new Socket(serverIP, serverPort);
-                            ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
-                            ObjectInputStream input = new ObjectInputStream(socket.getInputStream());) {
-
-                        output.writeObject(list);
-                        output.flush();
-
-                        list = (ArrayList<IdeaNode>) input.readObject();
-
-                        assignMainNode();
-
-                        applicationScreen.getChildren().clear();
-
-                        drawGraph();
-
-                    } catch (ClassNotFoundException e) {
-
-                        System.out.println("The list has not come from the server");
-
-                    } catch (IOException ex) {
-
-                        ex.printStackTrace();
-
-                    }
-                }
-            });
-
             if (mainNode != null) {
 
                 addMainNode.setDisable(true);
@@ -411,7 +383,6 @@ public class ApplicationScreenController implements Initializable {
 
             cm.getItems().add(addMainNode);
             cm.getItems().add(addNewNode);
-            cm.getItems().add(refreshList);
 
             cm.show(applicationScreen, event.getScreenX(), event.getScreenY());
 
@@ -430,7 +401,7 @@ public class ApplicationScreenController implements Initializable {
 
         double textWidth = text.getLayoutBounds().getWidth();
 
-        final Rectangle shape = createRectangle(textWidth, event.getScreenX(), event.getScreenY(), xCentre, yCentre, true);
+        final Rectangle shape = createRectangle(textWidth, event.getScreenX(), event.getScreenY(), xCentre, yCentre);
 
         IdeaNode parent = null;
 
@@ -500,7 +471,7 @@ public class ApplicationScreenController implements Initializable {
 
     }
 
-    private Rectangle createRectangle(double width, double x, double y, double xCentre, double yCentre, boolean drawLine) {
+    private Rectangle createRectangle(double width, double x, double y, double xCentre, double yCentre) { // To refactor? xCentre and yCentre are not used when there is no draw line
 
         final Rectangle shape = new Rectangle(width + 20, 40);
 
@@ -510,10 +481,6 @@ public class ApplicationScreenController implements Initializable {
         shape.setStrokeWidth(10);
         shape.setFill(Color.web("#85bade"));
         shape.setStroke(Color.web("#3b596b"));
-
-        if (drawLine) {
-            drawLine(shape, cm.getX(), cm.getY(), xCentre, yCentre);
-        }
 
         return shape;
     }
@@ -529,7 +496,7 @@ public class ApplicationScreenController implements Initializable {
 
     }
 
-    private void drawLine(Shape shape, double startX, double startY, double endX, double endY) {
+    private void drawLine(Shape shape, double startX, double startY, double endX, double endY) { // To remove?
 
         Line line = new Line();
 
@@ -545,11 +512,11 @@ public class ApplicationScreenController implements Initializable {
         createArrow(line, startX, startY, endX, endY);
     }
 
-    private void createArrow(Line line, double x1, double x2, double y1, double y2) {
+    private void createArrow(Line line, double x1, double x2, double y1, double y2) { // To remove?
 
     }
 
-    private void detectIntersection(Line line, Shape shape) {
+    private void detectIntersection(Line line, Shape shape) { // To remove?
 
         Shape collisionArea = Shape.intersect(line, shape);
         collisionX = collisionArea.getBoundsInParent().getMinX();
