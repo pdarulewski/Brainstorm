@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -38,8 +37,6 @@ import pbl.brainstorm.IdeaNode;
 
 public class ApplicationScreenController implements Initializable {
 
-    private static final int SLEEP_TIME = 500;
-
     @FXML
     private Pane applicationScreen;
 
@@ -57,6 +54,8 @@ public class ApplicationScreenController implements Initializable {
     private String serverIP;
     private int serverPort;
 
+    private MyThread myThread;
+
     public void setAddress(String address) {
 
         this.serverIP = address;
@@ -69,50 +68,94 @@ public class ApplicationScreenController implements Initializable {
 
     }
 
-    private class Drawer extends Task<Void> {
+    private class MyThread implements Runnable {
 
         @Override
-        protected Void call() throws Exception {
+        public void run() {
 
-            while (true) {
+            try {
 
-                try (Socket socket = new Socket(serverIP, serverPort);
-                        ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
-                        ObjectInputStream input = new ObjectInputStream(socket.getInputStream());) {
+                synchronized (this) {
 
-                    output.writeObject(list);
-                    output.flush();
+                    while (true) {
 
-                    list = (ArrayList<IdeaNode>) input.readObject();
+                        while (isSuspended) {
 
-                    assignMainNode();
+                            wait();
 
-                    ObservableList<Node> tempList = applicationScreen.getChildren();
+                        }
 
-                    Platform.runLater(() -> removeFromGUI(tempList));
+                        try (Socket socket = new Socket(serverIP, serverPort);
+                                ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+                                ObjectInputStream input = new ObjectInputStream(socket.getInputStream());) {
 
-                    Platform.runLater(() -> drawGraph());
+                            output.writeObject(list);
+                            output.flush();
 
-                } catch (ClassNotFoundException e) {
+                            list = (ArrayList<IdeaNode>) input.readObject();
 
-                    System.out.println("The list has not come from the server");
+                            assignMainNode();
 
-                } catch (IOException ex) {
+                            ObservableList<Node> tempList = applicationScreen.getChildren();
 
-                    ex.printStackTrace();
+                            Platform.runLater(() -> removeFromGUI(tempList));
 
-                } catch (Exception exc) {
+                            Platform.runLater(() -> drawGraph());
 
-                    System.out.println(exc);
+                        } catch (ClassNotFoundException e) {
+
+                            System.err.println("The list has not come from the server");
+
+                        } catch (IOException ex) {
+
+                            System.err.println(ex);
+
+                        } catch (Exception exc) {
+
+                            System.err.println(exc);
+
+                        }
+
+                    }
 
                 }
 
-                Thread.sleep(SLEEP_TIME);
+            } catch (InterruptedException e) {
+
+                System.err.println(e);
 
             }
 
         }
 
+        public void start() {
+
+            if (thread == null) {
+
+                thread = new Thread(this);
+
+                thread.setDaemon(true);
+
+                thread.start();
+            }
+        }
+
+        public void suspend() {
+
+            isSuspended = true;
+
+        }
+
+        public synchronized void resume() {
+
+            isSuspended = false;
+
+            notify();
+
+        }
+
+        private Thread thread;
+        private boolean isSuspended = false;
     }
 
     private void removeFromGUI(ObservableList<Node> tempList) {
@@ -132,13 +175,9 @@ public class ApplicationScreenController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
-        Drawer taskDraw = new Drawer();
+        myThread = new MyThread();
 
-        Thread thread = new Thread(taskDraw);
-
-        thread.setDaemon(true);
-
-        thread.start();
+        myThread.start();
 
     }
 
@@ -237,6 +276,8 @@ public class ApplicationScreenController implements Initializable {
                 @Override
                 public void handle(ActionEvent e) {
 
+                    myThread.suspend();
+
                     final ContextMenu subMenu = new ContextMenu();
 
                     for (final IdeaNode x : list) {
@@ -260,8 +301,8 @@ public class ApplicationScreenController implements Initializable {
 
                                 xCentre = x.getX();
                                 yCentre = x.getY();
-                            }
 
+                            }
                         });
                     }
 
@@ -297,14 +338,16 @@ public class ApplicationScreenController implements Initializable {
 
                                 } catch (IOException e) {
 
-                                    e.printStackTrace();
-                                    System.out.println("The socket for reading the object has problem");
+                                    System.err.println(e);
+                                    System.err.println("The socket for reading the object has problem");
 
                                 } catch (ClassNotFoundException ex) {
 
-                                    ex.printStackTrace();
+                                    System.err.println(ex);
 
                                 }
+
+                                myThread.resume();
 
                             }
                         }
@@ -319,6 +362,8 @@ public class ApplicationScreenController implements Initializable {
 
                 @Override
                 public void handle(ActionEvent e) {
+
+                    myThread.suspend();
 
                     final TextField tf = new TextField();
 
@@ -350,14 +395,16 @@ public class ApplicationScreenController implements Initializable {
 
                                 } catch (IOException e) {
 
-                                    e.printStackTrace();
-                                    System.out.println("The socket for reading the object has problem");
+                                    System.err.println(e);
+                                    System.err.println("The socket for reading the object has problem");
 
                                 } catch (ClassNotFoundException ex) {
 
-                                    ex.printStackTrace();
+                                    System.err.println(ex);
 
                                 }
+
+                                myThread.resume();
 
                             }
                         }
