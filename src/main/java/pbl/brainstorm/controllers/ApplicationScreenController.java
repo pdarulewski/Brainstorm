@@ -42,8 +42,8 @@ public class ApplicationScreenController implements Initializable {
 
     private final ContextMenu cm = new ContextMenu();
 
-    private final MenuItem addMainNode = new MenuItem("Add the main node...");
-    private final MenuItem addNewNode = new MenuItem("Add a new node...");
+    private final MenuItem addMainNode = new MenuItem("Add the main node");
+    private final MenuItem addNewNode = new MenuItem("Add a new node");
 
     private List<IdeaNode> list = new ArrayList<>();
     private IdeaNode mainNode = null;
@@ -294,15 +294,11 @@ public class ApplicationScreenController implements Initializable {
 
                         subMenu.getItems().add(item);
 
-                        item.setOnAction(new EventHandler<ActionEvent>() {
+                        item.setOnAction((ActionEvent t) -> {
 
-                            @Override
-                            public void handle(ActionEvent t) {
+                            xCentre = x.getX();
+                            yCentre = x.getY();
 
-                                xCentre = x.getX();
-                                yCentre = x.getY();
-
-                            }
                         });
                     }
 
@@ -318,101 +314,47 @@ public class ApplicationScreenController implements Initializable {
 
                     applicationScreen.getChildren().add(tf);
 
-                    tf.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+                    tf.addEventHandler(KeyEvent.KEY_PRESSED, (final KeyEvent keyEvent) -> {
 
-                        public void handle(final KeyEvent keyEvent) {
+                        if (keyEvent.getCode() == KeyCode.ENTER) {
 
-                            if (keyEvent.getCode() == KeyCode.ENTER) {
+                            refreshingNode(tf, event, xCentre, yCentre);
 
-                                refreshingNode(tf, event, xCentre, yCentre);
+                            sentToServer();
 
-                                try (Socket socket = new Socket(serverIP, serverPort);
-                                        ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
-                                        ObjectInputStream input = new ObjectInputStream(socket.getInputStream());) {
-
-                                    output.writeObject(list);
-
-                                    output.flush();
-
-                                    ArrayList<IdeaNode> trash = (ArrayList<IdeaNode>) input.readObject();
-
-                                } catch (IOException e) {
-
-                                    System.err.println(e);
-                                    System.err.println("The socket for reading the object has problem");
-
-                                } catch (ClassNotFoundException ex) {
-
-                                    System.err.println(ex);
-
-                                }
-
-                                myThread.resume();
-
-                            }
+                            myThread.resume();
                         }
-
                     });
 
                 }
 
             });
 
-            addMainNode.setOnAction(new EventHandler<ActionEvent>() {
+            addMainNode.setOnAction((ActionEvent e) -> {
 
-                @Override
-                public void handle(ActionEvent e) {
+                myThread.suspend();
 
-                    myThread.suspend();
+                final TextField tf = new TextField();
 
-                    final TextField tf = new TextField();
+                tf.setPromptText("Add the main topic...");
 
-                    tf.setPromptText("Add the main topic...");
+                tf.requestFocus();
 
-                    tf.requestFocus();
+                tf.relocate(event.getSceneX(), event.getSceneY());
 
-                    tf.relocate(event.getSceneX(), event.getSceneY());
+                applicationScreen.getChildren().add(tf);
 
-                    applicationScreen.getChildren().add(tf);
+                tf.addEventHandler(KeyEvent.KEY_PRESSED, (final KeyEvent keyEvent) -> {
 
-                    tf.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+                    if (keyEvent.getCode() == KeyCode.ENTER) {
 
-                        public void handle(final KeyEvent keyEvent) {
+                        refreshingMainNode(tf, event);
 
-                            if (keyEvent.getCode() == KeyCode.ENTER) {
+                        sentToServer();
 
-                                refreshingMainNode(tf, event);
-
-                                try (Socket socket = new Socket(serverIP, serverPort);
-                                        ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
-                                        ObjectInputStream input = new ObjectInputStream(socket.getInputStream());) {
-
-                                    output.writeObject(list);
-
-                                    output.flush();
-
-                                    ArrayList<IdeaNode> trash = (ArrayList<IdeaNode>) input.readObject();
-
-                                } catch (IOException e) {
-
-                                    System.err.println(e);
-                                    System.err.println("The socket for reading the object has problem");
-
-                                } catch (ClassNotFoundException ex) {
-
-                                    System.err.println(ex);
-
-                                }
-
-                                myThread.resume();
-
-                            }
-                        }
-
-                    });
-
-                }
-
+                        myThread.resume();
+                    }
+                });
             });
 
             if (mainNode != null) {
@@ -440,6 +382,31 @@ public class ApplicationScreenController implements Initializable {
             cm.hide();
 
         }
+    }
+
+    private void sentToServer() {
+
+        try (final Socket socket = new Socket(serverIP, serverPort);
+                final ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+                final ObjectInputStream input = new ObjectInputStream(socket.getInputStream())) {
+
+            output.writeObject(list);
+
+            output.flush();
+
+            ArrayList<IdeaNode> trash = (ArrayList<IdeaNode>) input.readObject();
+
+        } catch (IOException e1) {
+
+            System.err.println(e1);
+            System.err.println("The socket for reading the object has problem");
+
+        } catch (ClassNotFoundException ex) {
+
+            System.err.println(ex);
+
+        }
+
     }
 
     private void refreshingNode(final TextField tf, MouseEvent event, double xCentre, double yCentre) {

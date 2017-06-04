@@ -1,10 +1,14 @@
 package pbl.brainstorm;
 
+import java.util.Optional;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.ButtonType;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import pbl.brainstorm.dialogs.DialogUtils;
 
 public class Main extends Application {
 
@@ -26,6 +30,21 @@ public class Main extends Application {
         stage.setScene(scene);
 
         stage.setTitle("Brainstorm");
+
+        stage.setOnCloseRequest((t) -> {
+
+            Optional<ButtonType> result = DialogUtils.confirmationDialog();
+
+            if (result.get() == ButtonType.OK) {
+
+                Platform.exit();
+                System.exit(0);
+
+            }
+
+            t.consume();
+
+        });
 
         stage.show();
 

@@ -2,12 +2,14 @@ package pbl.brainstorm.controllers;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
@@ -15,6 +17,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import pbl.brainstorm.dialogs.DialogUtils;
 
 public class MenuController implements Initializable {
 
@@ -42,7 +45,14 @@ public class MenuController implements Initializable {
     @FXML
     public void exitApp() {
 
-        Platform.exit();
+        Optional<ButtonType> result = DialogUtils.confirmationDialog();
+
+        if (result.get() == ButtonType.OK) {
+
+            Platform.exit();
+            System.exit(0);
+            
+        }
 
     }
 
