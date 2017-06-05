@@ -1,5 +1,7 @@
 package pbl.brainstorm.controllers;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -10,6 +12,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -19,6 +22,7 @@ import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -33,6 +37,7 @@ import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextBoundsType;
+import javax.imageio.ImageIO;
 import pbl.brainstorm.IdeaNode;
 
 public class ApplicationScreenController implements Initializable {
@@ -44,6 +49,7 @@ public class ApplicationScreenController implements Initializable {
 
     private final MenuItem addMainNode = new MenuItem("Add the main node");
     private final MenuItem addNewNode = new MenuItem("Add a new node");
+    private final MenuItem takeSnapshot = new MenuItem("Take a snapshot...");
 
     private List<IdeaNode> list = new ArrayList<>();
     private IdeaNode mainNode = null;
@@ -357,6 +363,26 @@ public class ApplicationScreenController implements Initializable {
                 });
             });
 
+            takeSnapshot.setOnAction(t -> {
+
+                WritableImage snapshot = applicationScreen.getScene().snapshot(null);
+
+                BufferedImage tempImg = SwingFXUtils.fromFXImage(snapshot, null);
+
+                File outputFile = new File("/home/nefendi/Pulpit/image.png");
+
+                try {
+
+                    ImageIO.write(tempImg, "png", outputFile);
+
+                } catch (IOException ex) {
+
+                    System.err.println(ex);
+
+                }
+
+            });
+
             if (mainNode != null) {
 
                 addMainNode.setDisable(true);
@@ -372,6 +398,7 @@ public class ApplicationScreenController implements Initializable {
 
             cm.getItems().add(addMainNode);
             cm.getItems().add(addNewNode);
+            cm.getItems().add(takeSnapshot);
 
             cm.show(applicationScreen, event.getScreenX(), event.getScreenY());
 
