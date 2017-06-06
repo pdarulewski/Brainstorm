@@ -1,10 +1,14 @@
 package pbl.brainstorm.controllers;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -16,25 +20,39 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import pbl.brainstorm.IdeaNode;
+import pbl.brainstorm.dao.Dao;
+import pbl.brainstorm.dao.IdeaNodeListDaoFactory;
 import pbl.brainstorm.dialogs.DialogUtils;
 
 public class MenuController implements Initializable {
 
     private MainController mainController;
 
+    private List<IdeaNode> list;
+
     @FXML
     private Pane menuPane;
+
     @FXML
     private Button startButton;
+
     @FXML
     private Button exitButton;
+
     @FXML
     private Label emptyProblemField;
+
     @FXML
     private TextField addressField;
+
     @FXML
     private TextField portField;
+
+    @FXML
+    private Button loadButton;
 
     public void setMainController(MainController mainController) {
 
@@ -51,7 +69,7 @@ public class MenuController implements Initializable {
 
             Platform.exit();
             System.exit(0);
-            
+
         }
 
     }
@@ -71,7 +89,7 @@ public class MenuController implements Initializable {
 
             } catch (IOException ex) {
 
-                ex.printStackTrace();
+                System.err.println(ex);
 
             }
 
@@ -80,6 +98,8 @@ public class MenuController implements Initializable {
             appController.setAddress(addressField.getText());
 
             appController.setPort(Integer.valueOf(portField.getText()));
+
+            appController.setList(list);
 
             mainController.setScreen(pane);
 
@@ -102,7 +122,7 @@ public class MenuController implements Initializable {
     }
 
     @FXML
-    private void handleMouseClicked(MouseEvent event) {
+    private void handleMouseClicked() {
 
         menuPane.requestFocus();
 
@@ -110,6 +130,35 @@ public class MenuController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+
+        list = new ArrayList<>();
+
+    }
+
+    @FXML
+    private void handleLoad() {
+
+        FileChooser fileChooser = new FileChooser();
+
+        fileChooser.setTitle("Choose a state to load:");
+
+        File outputFile = fileChooser.showOpenDialog(menuPane.getScene().getWindow());
+
+        if (outputFile != null) {
+
+            try (Dao<List<IdeaNode>> dao = IdeaNodeListDaoFactory.getFileDao(outputFile.getAbsolutePath());) {
+
+                list = dao.read();
+
+            } catch (Exception ex) {
+
+                System.err.println(ex);
+
+            }
+
+            startBrainstorming();
+
+        }
 
     }
 

@@ -36,7 +36,7 @@ public class MainController {
 
         } catch (IOException ex) {
 
-            ex.printStackTrace();
+            System.err.println(ex);
         }
 
         MenuController menuController = loader.getController();

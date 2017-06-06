@@ -37,10 +37,15 @@ import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextBoundsType;
+import javafx.stage.FileChooser;
 import javax.imageio.ImageIO;
 import pbl.brainstorm.IdeaNode;
+import pbl.brainstorm.dao.Dao;
+import pbl.brainstorm.dao.IdeaNodeListDaoFactory;
 
 public class ApplicationScreenController implements Initializable {
+
+    private static final int MARGIN = 15;
 
     @FXML
     private Pane applicationScreen;
@@ -50,8 +55,10 @@ public class ApplicationScreenController implements Initializable {
     private final MenuItem addMainNode = new MenuItem("Add the main node");
     private final MenuItem addNewNode = new MenuItem("Add a new node");
     private final MenuItem takeSnapshot = new MenuItem("Take a snapshot...");
+    private final MenuItem saveState = new MenuItem("Save the state of the current session...");
 
-    private List<IdeaNode> list = new ArrayList<>();
+    private List<IdeaNode> list;
+
     private IdeaNode mainNode = null;
 
     private double collisionX; // To remove?
@@ -71,6 +78,12 @@ public class ApplicationScreenController implements Initializable {
     public void setPort(int port) {
 
         this.serverPort = port;
+
+    }
+
+    public void setList(List<IdeaNode> list) {
+
+        this.list = list;
 
     }
 
@@ -208,7 +221,7 @@ public class ApplicationScreenController implements Initializable {
 
         for (IdeaNode x : list) {
 
-            Text text = createText(x.getContent(), 15);
+            Text text = createText(x.getContent(), MARGIN);
 
             double textWidth = text.getLayoutBounds().getWidth();
 
@@ -216,7 +229,7 @@ public class ApplicationScreenController implements Initializable {
 
             if (x.isMain()) {
 
-                group.getChildren().add(createMainNode(textWidth / 2 + 15, x.getX(), x.getY()));
+                group.getChildren().add(createMainNode(textWidth / 2 + MARGIN, x.getX(), x.getY()));
 
             } else {
 
@@ -240,7 +253,7 @@ public class ApplicationScreenController implements Initializable {
 
             if (!x.isMain()) {
 
-                applicationScreen.getChildren().add(drawLineGraph(x));
+                applicationScreen.getChildren().add(drawLine(x));
 
             }
 
@@ -248,11 +261,11 @@ public class ApplicationScreenController implements Initializable {
 
     }
 
-    private Line drawLineGraph(IdeaNode node) {
+    private Line drawLine(IdeaNode node) {
 
         Line line = new Line();
 
-        line.setStroke(Color.LIGHTGRAY);
+        line.setStroke(Color.DIMGREY);
         line.setStrokeWidth(3);
         line.setStartX(node.getX());
         line.setStartY(node.getY());
@@ -326,7 +339,7 @@ public class ApplicationScreenController implements Initializable {
 
                             refreshingNode(tf, event, xCentre, yCentre);
 
-                            sentToServer();
+                            sendToServer();
 
                             myThread.resume();
                         }
@@ -356,28 +369,63 @@ public class ApplicationScreenController implements Initializable {
 
                         refreshingMainNode(tf, event);
 
-                        sentToServer();
+                        sendToServer();
 
                         myThread.resume();
                     }
                 });
             });
 
-            takeSnapshot.setOnAction(t -> {
+            takeSnapshot.setOnAction(t -> { // Must be checked on Windows
 
                 WritableImage snapshot = applicationScreen.getScene().snapshot(null);
 
                 BufferedImage tempImg = SwingFXUtils.fromFXImage(snapshot, null);
 
-                File outputFile = new File("/home/nefendi/Pulpit/image.png");
+                FileChooser fileChooser = new FileChooser();
 
-                try {
+                fileChooser.setTitle("Choose where to save the snapshot:");
 
-                    ImageIO.write(tempImg, "png", outputFile);
+                fileChooser.setInitialFileName("snapshot.png");
 
-                } catch (IOException ex) {
+                File outputFile = fileChooser.showSaveDialog(applicationScreen.getScene().getWindow());
 
-                    System.err.println(ex);
+                if (outputFile != null) {
+
+                    try {
+
+                        ImageIO.write(tempImg, "png", outputFile);
+
+                    } catch (IOException ex) {
+
+                        System.err.println(ex);
+
+                    }
+                }
+
+            });
+
+            saveState.setOnAction(t -> {
+
+                FileChooser fileChooser = new FileChooser();
+
+                fileChooser.setTitle("Choose where to save the current session:");
+
+                fileChooser.setInitialFileName("session.dat");
+
+                File outputFile = fileChooser.showSaveDialog(applicationScreen.getScene().getWindow());
+
+                if (outputFile != null) {
+
+                    try (Dao<List<IdeaNode>> dao = IdeaNodeListDaoFactory.getFileDao(outputFile.getAbsolutePath());) {
+
+                        dao.write(list);
+
+                    } catch (Exception ex) {
+
+                        System.err.println(ex);
+
+                    }
 
                 }
 
@@ -399,6 +447,7 @@ public class ApplicationScreenController implements Initializable {
             cm.getItems().add(addMainNode);
             cm.getItems().add(addNewNode);
             cm.getItems().add(takeSnapshot);
+            cm.getItems().add(saveState);
 
             cm.show(applicationScreen, event.getScreenX(), event.getScreenY());
 
@@ -411,7 +460,7 @@ public class ApplicationScreenController implements Initializable {
         }
     }
 
-    private void sentToServer() {
+    private void sendToServer() {
 
         try (final Socket socket = new Socket(serverIP, serverPort);
                 final ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
@@ -438,7 +487,7 @@ public class ApplicationScreenController implements Initializable {
 
     private void refreshingNode(final TextField tf, MouseEvent event, double xCentre, double yCentre) {
 
-        Text text = createText(tf.getText(), 15);
+        Text text = createText(tf.getText(), MARGIN);
 
         double textWidth = text.getLayoutBounds().getWidth();
 
@@ -470,11 +519,11 @@ public class ApplicationScreenController implements Initializable {
 
     private void refreshingMainNode(final TextField tf, MouseEvent event) {
 
-        Text text = createText(tf.getText(), 15);
+        Text text = createText(tf.getText(), MARGIN);
 
         double textWidth = text.getLayoutBounds().getWidth();
 
-        final Circle circle = createMainNode(textWidth / 2 + 15, event.getScreenX(), event.getScreenY());
+        final Circle circle = createMainNode(textWidth / 2 + MARGIN, event.getScreenX(), event.getScreenY());
 
         mainNode = new IdeaNode(text.getText(), event.getScreenX(), event.getScreenY(), true, null);
 
@@ -537,22 +586,21 @@ public class ApplicationScreenController implements Initializable {
 
     }
 
-    private void drawLine(Shape shape, double startX, double startY, double endX, double endY) { // To remove?
-
-        Line line = new Line();
-
-        line.setStroke(Color.LIGHTGRAY);
-        line.setStrokeWidth(3);
-        line.setStartX(startX);
-        line.setStartY(startY);
-        line.setEndX(endX);
-        line.setEndY(endY);
-        applicationScreen.getChildren().add(line);
-        line.toBack();
-        detectIntersection(line, shape);
-        createArrow(line, startX, startY, endX, endY);
-    }
-
+//    private void drawLine(Shape shape, double startX, double startY, double endX, double endY) { // To remove?
+//
+//        Line line = new Line();
+//
+//        line.setStroke(Color.LIGHTGRAY);
+//        line.setStrokeWidth(3);
+//        line.setStartX(startX);
+//        line.setStartY(startY);
+//        line.setEndX(endX);
+//        line.setEndY(endY);
+//        applicationScreen.getChildren().add(line);
+//        line.toBack();
+//        detectIntersection(line, shape);
+//        createArrow(line, startX, startY, endX, endY);
+//    }
     private void createArrow(Line line, double x1, double x2, double y1, double y2) { // To remove?
 
     }
