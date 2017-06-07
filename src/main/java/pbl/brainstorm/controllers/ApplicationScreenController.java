@@ -21,7 +21,6 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.image.WritableImage;
@@ -195,7 +194,7 @@ public class ApplicationScreenController implements Initializable {
 
             Node x = tempList.get(i);
 
-            if (!(x instanceof TextField)) {
+            if (!(x instanceof TextField) && !(x instanceof ColorPicker)) {
 
                 tempList.remove(x);
 
@@ -205,6 +204,9 @@ public class ApplicationScreenController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+
+        strokePicker.getStyleClass().add("button");
+        fillPicker.getStyleClass().add("button");
 
         strokePicker.setOnAction(t -> {
 

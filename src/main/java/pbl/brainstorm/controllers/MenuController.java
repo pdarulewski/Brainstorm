@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -18,7 +17,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -95,17 +93,18 @@ public class MenuController implements Initializable {
 
             ApplicationScreenController appController = loader.getController();
 
+            appController.setList(list);
+
             appController.setAddress(addressField.getText());
 
             appController.setPort(Integer.valueOf(portField.getText()));
-
-            appController.setList(list);
 
             mainController.setScreen(pane);
 
             Stage stage = (Stage) pane.getScene().getWindow();
 
             stage.setMaximized(true);
+
         }
 
     }
