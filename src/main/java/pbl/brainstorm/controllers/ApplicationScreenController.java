@@ -19,7 +19,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.image.WritableImage;
@@ -31,7 +33,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
 import javafx.scene.shape.StrokeLineJoin;
 import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
@@ -50,19 +51,24 @@ public class ApplicationScreenController implements Initializable {
     @FXML
     private Pane applicationScreen;
 
+    private final ColorPicker strokePicker = new ColorPicker(Color.BROWN);
+    private final ColorPicker fillPicker = new ColorPicker(Color.ANTIQUEWHITE);
+
+    private String strokeColour = getWebColour(strokePicker);
+    private String fillColour = getWebColour(fillPicker);
+
     private final ContextMenu cm = new ContextMenu();
 
     private final MenuItem addMainNode = new MenuItem("Add the main node");
     private final MenuItem addNewNode = new MenuItem("Add a new node");
     private final MenuItem takeSnapshot = new MenuItem("Take a snapshot...");
     private final MenuItem saveState = new MenuItem("Save the state of the current session...");
+    private final MenuItem changeStroke = new MenuItem("Change stroke colour", strokePicker);
+    private final MenuItem changeFill = new MenuItem("Change fill colour", fillPicker);
 
     private List<IdeaNode> list;
 
     private IdeaNode mainNode = null;
-
-    private double collisionX; // To remove?
-    private double collisionY; // To remove?
 
     private String serverIP;
     private int serverPort;
@@ -84,6 +90,12 @@ public class ApplicationScreenController implements Initializable {
     public void setList(List<IdeaNode> list) {
 
         this.list = list;
+
+    }
+
+    public String getWebColour(ColorPicker picker) {
+
+        return "#" + Integer.toHexString(picker.getValue().hashCode());
 
     }
 
@@ -194,6 +206,18 @@ public class ApplicationScreenController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
+        strokePicker.setOnAction(t -> {
+
+            strokeColour = getWebColour(strokePicker);
+
+        });
+
+        fillPicker.setOnAction(t -> {
+
+            fillColour = getWebColour(fillPicker);
+
+        });
+
         myThread = new MyThread();
 
         myThread.start();
@@ -229,11 +253,11 @@ public class ApplicationScreenController implements Initializable {
 
             if (x.isMain()) {
 
-                group.getChildren().add(createMainNode(textWidth / 2 + MARGIN, x.getX(), x.getY()));
+                group.getChildren().add(createMainNode(textWidth / 2 + MARGIN, x.getX(), x.getY(), x.getStroke(), x.getFill()));
 
             } else {
 
-                group.getChildren().add(createRectangle(textWidth, x.getX(), x.getY(), x.getParent().getX(), x.getParent().getY()));
+                group.getChildren().add(createRectangle(textWidth, x.getX(), x.getY(), x.getStroke(), x.getFill()));
 
             }
 
@@ -371,6 +395,12 @@ public class ApplicationScreenController implements Initializable {
 
                         sendToServer();
 
+                        strokePicker.setValue(Color.web("#3b596b"));
+                        fillPicker.setValue(Color.web("#85bade"));
+
+                        strokeColour = getWebColour(strokePicker);
+                        fillColour = getWebColour(fillPicker);
+
                         myThread.resume();
                     }
                 });
@@ -444,10 +474,8 @@ public class ApplicationScreenController implements Initializable {
 
             }
 
-            cm.getItems().add(addMainNode);
-            cm.getItems().add(addNewNode);
-            cm.getItems().add(takeSnapshot);
-            cm.getItems().add(saveState);
+            cm.getItems().addAll(addMainNode, addNewNode, takeSnapshot,
+                    saveState, changeStroke, changeFill);
 
             cm.show(applicationScreen, event.getScreenX(), event.getScreenY());
 
@@ -491,7 +519,7 @@ public class ApplicationScreenController implements Initializable {
 
         double textWidth = text.getLayoutBounds().getWidth();
 
-        final Rectangle shape = createRectangle(textWidth, event.getScreenX(), event.getScreenY(), xCentre, yCentre);
+        final Rectangle shape = createRectangle(textWidth, event.getScreenX(), event.getScreenY(), strokeColour, fillColour);
 
         IdeaNode parent = null;
 
@@ -505,7 +533,7 @@ public class ApplicationScreenController implements Initializable {
 
         }
 
-        list.add(new IdeaNode(text.getText(), event.getScreenX(), event.getScreenY(), false, parent));
+        list.add(new IdeaNode(text.getText(), event.getScreenX(), event.getScreenY(), false, parent, strokeColour, fillColour));
 
         Group group = new Group(shape, text);
 
@@ -523,9 +551,9 @@ public class ApplicationScreenController implements Initializable {
 
         double textWidth = text.getLayoutBounds().getWidth();
 
-        final Circle circle = createMainNode(textWidth / 2 + MARGIN, event.getScreenX(), event.getScreenY());
+        final Circle circle = createMainNode(textWidth / 2 + MARGIN, event.getScreenX(), event.getScreenY(), strokeColour, fillColour);
 
-        mainNode = new IdeaNode(text.getText(), event.getScreenX(), event.getScreenY(), true, null);
+        mainNode = new IdeaNode(text.getText(), event.getScreenX(), event.getScreenY(), true, null, strokeColour, fillColour);
 
         list.add(mainNode);
 
@@ -539,14 +567,14 @@ public class ApplicationScreenController implements Initializable {
 
     }
 
-    private Circle createMainNode(double radius, double x, double y) {
+    private Circle createMainNode(double radius, double x, double y, String stroke, String fill) {
 
         final Circle circle = new Circle(radius);
 
-        circle.setStroke(Color.BROWN);
+        circle.setStroke(Color.web(stroke));
         circle.setStrokeWidth(10);
         circle.setStrokeType(StrokeType.INSIDE);
-        circle.setFill(Color.ANTIQUEWHITE);
+        circle.setFill(Color.web(fill));
         circle.relocate(x - radius, y - radius);
 
         return circle;
@@ -561,7 +589,7 @@ public class ApplicationScreenController implements Initializable {
 
     }
 
-    private Rectangle createRectangle(double width, double x, double y, double xCentre, double yCentre) { // To refactor? xCentre and yCentre are not used when there is no draw line
+    private Rectangle createRectangle(double width, double x, double y, String stroke, String fill) {
 
         final Rectangle shape = new Rectangle(width + 20, 40);
 
@@ -569,8 +597,8 @@ public class ApplicationScreenController implements Initializable {
         shape.setStrokeType(StrokeType.OUTSIDE);
         shape.setStrokeLineJoin(StrokeLineJoin.ROUND);
         shape.setStrokeWidth(10);
-        shape.setFill(Color.web("#85bade"));
-        shape.setStroke(Color.web("#3b596b"));
+        shape.setFill(Color.web(fill));
+        shape.setStroke(Color.web(stroke));
 
         return shape;
     }
@@ -586,30 +614,4 @@ public class ApplicationScreenController implements Initializable {
 
     }
 
-//    private void drawLine(Shape shape, double startX, double startY, double endX, double endY) { // To remove?
-//
-//        Line line = new Line();
-//
-//        line.setStroke(Color.LIGHTGRAY);
-//        line.setStrokeWidth(3);
-//        line.setStartX(startX);
-//        line.setStartY(startY);
-//        line.setEndX(endX);
-//        line.setEndY(endY);
-//        applicationScreen.getChildren().add(line);
-//        line.toBack();
-//        detectIntersection(line, shape);
-//        createArrow(line, startX, startY, endX, endY);
-//    }
-    private void createArrow(Line line, double x1, double x2, double y1, double y2) { // To remove?
-
-    }
-
-    private void detectIntersection(Line line, Shape shape) { // To remove?
-
-        Shape collisionArea = Shape.intersect(line, shape);
-        collisionX = collisionArea.getBoundsInParent().getMinX();
-        collisionY = collisionArea.getBoundsInParent().getMinY();
-
-    }
 }

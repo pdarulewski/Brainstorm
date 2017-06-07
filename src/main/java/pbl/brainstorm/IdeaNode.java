@@ -8,13 +8,27 @@ public class IdeaNode implements Serializable {
 
     static final long serialVersionUID = 423278748783209732L;
 
-    public IdeaNode(String content, double x, double y, boolean main, IdeaNode parentNode) {
+    public IdeaNode(String content, double x, double y, boolean main, IdeaNode parentNode, String stroke, String fill) {
 
         this.content = content;
         this.x = x;
         this.y = y;
         this.main = main;
+        this.stroke = stroke;
+        this.fill = fill;
         this.parentNode = parentNode;
+
+    }
+
+    public String getStroke() {
+
+        return stroke;
+
+    }
+
+    public String getFill() {
+
+        return fill;
 
     }
 
@@ -59,5 +73,7 @@ public class IdeaNode implements Serializable {
     private final double x;
     private final double y;
     private final boolean main;
+    private final String stroke;
+    private final String fill;
     private final IdeaNode parentNode;
 }
