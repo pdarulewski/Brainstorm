@@ -17,10 +17,14 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.image.WritableImage;
@@ -28,6 +32,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
@@ -38,6 +43,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextBoundsType;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javax.imageio.ImageIO;
 import pbl.brainstorm.IdeaNode;
 import pbl.brainstorm.dao.Dao;
@@ -53,6 +60,9 @@ public class ApplicationScreenController implements Initializable {
     private final ColorPicker strokePicker = new ColorPicker(Color.BROWN);
     private final ColorPicker fillPicker = new ColorPicker(Color.ANTIQUEWHITE);
 
+    private final ObservableList<Color> customStrokeColours = strokePicker.getCustomColors();
+    private final ObservableList<Color> customFillColours = fillPicker.getCustomColors();
+
     private String strokeColour = getWebColour(strokePicker);
     private String fillColour = getWebColour(fillPicker);
 
@@ -62,8 +72,7 @@ public class ApplicationScreenController implements Initializable {
     private final MenuItem addNewNode = new MenuItem("Add a new node");
     private final MenuItem takeSnapshot = new MenuItem("Take a snapshot...");
     private final MenuItem saveState = new MenuItem("Save the state of the current session...");
-    private final MenuItem changeStroke = new MenuItem("Change stroke colour", strokePicker);
-    private final MenuItem changeFill = new MenuItem("Change fill colour", fillPicker);
+    private final MenuItem chooseColours = new MenuItem("Choose colours...");
 
     private List<IdeaNode> list;
 
@@ -205,8 +214,8 @@ public class ApplicationScreenController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
-        strokePicker.getStyleClass().add("button");
-        fillPicker.getStyleClass().add("button");
+        strokePicker.getStyleClass().add("split-button");
+        fillPicker.getStyleClass().add("split-button");
 
         strokePicker.setOnAction(t -> {
 
@@ -408,7 +417,7 @@ public class ApplicationScreenController implements Initializable {
                 });
             });
 
-            takeSnapshot.setOnAction(t -> { // Must be checked on Windows
+            takeSnapshot.setOnAction(t -> {
 
                 WritableImage snapshot = applicationScreen.getScene().snapshot(null);
 
@@ -463,6 +472,37 @@ public class ApplicationScreenController implements Initializable {
 
             });
 
+            chooseColours.setOnAction(t -> {
+
+                final Stage dialog = new Stage();
+
+                dialog.initModality(Modality.APPLICATION_MODAL);
+                dialog.initOwner(applicationScreen.getScene().getWindow());
+                dialog.setTitle("Choose colours:");
+                dialog.setResizable(false);
+                dialog.setAlwaysOnTop(true);
+
+                Label strokeLabel = new Label("Pick stroke colour:");
+                Label fillLabel = new Label("Pick fill colour:");
+
+                strokeLabel.setStyle("-fx-font: 20 Calibri;");
+                fillLabel.setStyle("-fx-font: 20 Calibri;");
+
+                VBox dialogVbox = new VBox(20);
+
+                dialogVbox.setPadding(new Insets(10));
+
+                dialogVbox.getChildren().addAll(strokeLabel, strokePicker, fillLabel, fillPicker);
+
+                dialogVbox.setAlignment(Pos.CENTER);
+
+                Scene dialogScene = new Scene(dialogVbox, 300, 200);
+
+                dialog.setScene(dialogScene);
+                dialog.show();
+
+            });
+
             if (mainNode != null) {
 
                 addMainNode.setDisable(true);
@@ -477,7 +517,7 @@ public class ApplicationScreenController implements Initializable {
             }
 
             cm.getItems().addAll(addMainNode, addNewNode, takeSnapshot,
-                    saveState, changeStroke, changeFill);
+                    saveState, chooseColours);
 
             cm.show(applicationScreen, event.getScreenX(), event.getScreenY());
 
@@ -609,9 +649,10 @@ public class ApplicationScreenController implements Initializable {
 
         final Text text = new Text(name);
 
-        text.setFont(new Font(fontSize));
-        text.setBoundsType(TextBoundsType.VISUAL);
+        text.setFont(new Font("Nimbus Sans", fontSize));
 
+        text.setBoundsType(TextBoundsType.VISUAL);
+        
         return text;
 
     }
