@@ -29,7 +29,7 @@ public class Main extends Application {
 
         stage.setScene(scene);
 
-        stage.setTitle("Brainstorm");
+        stage.setTitle("bStorm");
 
         stage.setOnCloseRequest((t) -> {
 
